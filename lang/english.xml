@@ -1177,9 +1177,6 @@
     <menu id="2">
       <phrase id="menutext" value="Sent" />
     </menu>
-    <menu id="6">
-      <phrase id="menutext" value="SENDMESSAGE" />
-    </menu>
     <menu id="3">
       <phrase id="menutext" value="Contacts" />
     </menu>
@@ -1224,9 +1221,6 @@
       <field id="phone_contact">
         <phrase id="fldcaption" value="Phone" />
       </field>
-    </table>
-    <table id="sendsms">
-      <phrase id="tblcaption" value="SENDMESSAGE" />
     </table>
     <table id="send">
       <phrase id="tblcaption" value="SENDING SMS..." />
