@@ -38,4 +38,6 @@ return [
     "message_tbl" => \DI\create(MessageTbl::class),
     "sent_tbl" => \DI\create(SentTbl::class),
     "contact_tbl" => \DI\create(ContactTbl::class),
+    "send" => \DI\create(Send::class),
+    "twilio_tbl" => \DI\create(TwilioTbl::class),
 ];

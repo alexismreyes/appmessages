@@ -1159,8 +1159,11 @@
   <project>
     <phrase id="bodytitle" value="CBS Messages App" />
     <phrase id="footertext" value="&amp;copy;2022 e.World Technology Limited. All rights reserved." />
-    <menu id="6">
-      <phrase id="menutext" value="SENDMESSAGE" />
+    <menu id="7">
+      <phrase id="menutext" value="SENDING SMS..." />
+    </menu>
+    <menu id="8">
+      <phrase id="menutext" value="twilio table" />
     </menu>
     <menu id="1">
       <phrase id="menutext" value="Send" />
@@ -1170,6 +1173,9 @@
     </menu>
     <menu id="2">
       <phrase id="menutext" value="Sent" />
+    </menu>
+    <menu id="6">
+      <phrase id="menutext" value="SENDMESSAGE" />
     </menu>
     <menu id="3">
       <phrase id="menutext" value="Contacts" />
@@ -1218,6 +1224,18 @@
     </table>
     <table id="sendsms">
       <phrase id="tblcaption" value="SENDMESSAGE" />
+    </table>
+    <table id="send">
+      <phrase id="tblcaption" value="SENDING SMS..." />
+    </table>
+    <table id="twilio_tbl">
+      <phrase id="tblcaption" value="twilio table" />
+      <field id="sid_twilio">
+        <phrase id="fldcaption" value="sid twilio" />
+      </field>
+      <field id="token_twilio">
+        <phrase id="fldcaption" value="token twilio" />
+      </field>
     </table>
   </project>
 </ew-language>

@@ -8,9 +8,9 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 
 /**
- * Table class for message_tbl
+ * Table class for twilio_tbl
  */
-class MessageTbl extends DbTable
+class TwilioTbl extends DbTable
 {
     protected $SqlFrom = "";
     protected $SqlSelect = null;
@@ -41,10 +41,8 @@ class MessageTbl extends DbTable
     public $ModalMultiEdit = false;
 
     // Fields
-    public $id_message;
-    public $created_at_message;
-    public $to_message;
-    public $text_message;
+    public $sid_twilio;
+    public $token_twilio;
 
     // Page ID
     public $PageID = ""; // To be overridden by subclass
@@ -57,14 +55,14 @@ class MessageTbl extends DbTable
 
         // Language object
         $Language = Container("language");
-        $this->TableVar = "message_tbl";
-        $this->TableName = 'message_tbl';
+        $this->TableVar = "twilio_tbl";
+        $this->TableName = 'twilio_tbl';
         $this->TableType = "TABLE";
         $this->ImportUseTransaction = $this->supportsTransaction() && Config("IMPORT_USE_TRANSACTION");
         $this->UseTransaction = $this->supportsTransaction() && Config("USE_TRANSACTION");
 
         // Update Table
-        $this->UpdateTable = "[dbo].[message_tbl]";
+        $this->UpdateTable = "[dbo].[twilio_tbl]";
         $this->Dbid = 'DB';
         $this->ExportAll = true;
         $this->ExportPageBreakCount = 0; // Page break per every n record (PDF only)
@@ -91,107 +89,53 @@ class MessageTbl extends DbTable
         $this->UserIDAllowSecurity = Config("DEFAULT_USER_ID_ALLOW_SECURITY"); // Default User ID allowed permissions
         $this->BasicSearch = new BasicSearch($this);
 
-        // id_message
-        $this->id_message = new DbField(
+        // sid_twilio
+        $this->sid_twilio = new DbField(
             $this, // Table
-            'x_id_message', // Variable name
-            'id_message', // Name
-            '[id_message]', // Expression
-            'CAST([id_message] AS NVARCHAR)', // Basic search expression
-            3, // Type
-            4, // Size
-            -1, // Date/Time format
-            false, // Is upload field
-            '[id_message]', // Virtual expression
-            false, // Is virtual
-            false, // Force selection
-            false, // Is Virtual search
-            'FORMATTED TEXT', // View Tag
-            'NO' // Edit Tag
-        );
-        $this->id_message->InputTextType = "text";
-        $this->id_message->IsAutoIncrement = true; // Autoincrement field
-        $this->id_message->IsPrimaryKey = true; // Primary key field
-        $this->id_message->IsForeignKey = true; // Foreign key field
-        $this->id_message->Nullable = false; // NOT NULL field
-        $this->id_message->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
-        $this->id_message->SearchOperators = ["=", "<>", "IN", "NOT IN", "<", "<=", ">", ">=", "BETWEEN", "NOT BETWEEN"];
-        $this->Fields['id_message'] = &$this->id_message;
-
-        // created_at_message
-        $this->created_at_message = new DbField(
-            $this, // Table
-            'x_created_at_message', // Variable name
-            'created_at_message', // Name
-            '[created_at_message]', // Expression
-            CastDateFieldForLike("[created_at_message]", 16, "DB"), // Basic search expression
-            135, // Type
-            8, // Size
-            16, // Date/Time format
-            false, // Is upload field
-            '[created_at_message]', // Virtual expression
-            false, // Is virtual
-            false, // Force selection
-            false, // Is Virtual search
-            'FORMATTED TEXT', // View Tag
-            'TEXT' // Edit Tag
-        );
-        $this->created_at_message->InputTextType = "text";
-        $this->created_at_message->Nullable = false; // NOT NULL field
-        $this->created_at_message->Required = true; // Required field
-        $this->created_at_message->DefaultErrorMessage = str_replace("%s", DateFormat(16), $Language->phrase("IncorrectDate"));
-        $this->created_at_message->SearchOperators = ["=", "<>", "IN", "NOT IN", "<", "<=", ">", ">=", "BETWEEN", "NOT BETWEEN"];
-        $this->Fields['created_at_message'] = &$this->created_at_message;
-
-        // to_message
-        $this->to_message = new DbField(
-            $this, // Table
-            'x_to_message', // Variable name
-            'to_message', // Name
-            '[to_message]', // Expression
-            'CAST([to_message] AS NVARCHAR)', // Basic search expression
-            3, // Type
-            4, // Size
-            -1, // Date/Time format
-            false, // Is upload field
-            '[EV__to_message]', // Virtual expression
-            true, // Is virtual
-            false, // Force selection
-            true, // Is Virtual search
-            'FORMATTED TEXT', // View Tag
-            'TEXT' // Edit Tag
-        );
-        $this->to_message->InputTextType = "text";
-        $this->to_message->Nullable = false; // NOT NULL field
-        $this->to_message->Required = true; // Required field
-        $this->to_message->Lookup = new Lookup('to_message', 'contact_tbl', false, 'id_contact', ["name_contact","phone_contact","",""], '', '', [], [], [], [], [], [], '', '', "CONCAT([name_contact],'" . ValueSeparator(1, $this->to_message) . "',[phone_contact])");
-        $this->to_message->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
-        $this->to_message->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
-        $this->Fields['to_message'] = &$this->to_message;
-
-        // text_message
-        $this->text_message = new DbField(
-            $this, // Table
-            'x_text_message', // Variable name
-            'text_message', // Name
-            '[text_message]', // Expression
-            '[text_message]', // Basic search expression
+            'x_sid_twilio', // Variable name
+            'sid_twilio', // Name
+            '[sid_twilio]', // Expression
+            '[sid_twilio]', // Basic search expression
             200, // Type
-            0, // Size
+            50, // Size
             -1, // Date/Time format
             false, // Is upload field
-            '[text_message]', // Virtual expression
+            '[sid_twilio]', // Virtual expression
             false, // Is virtual
             false, // Force selection
             false, // Is Virtual search
             'FORMATTED TEXT', // View Tag
-            'TEXTAREA' // Edit Tag
+            'TEXT' // Edit Tag
         );
-        $this->text_message->InputTextType = "text";
-        $this->text_message->Nullable = false; // NOT NULL field
-        $this->text_message->Required = true; // Required field
-        $this->text_message->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
-        $this->Fields['text_message'] = &$this->text_message;
+        $this->sid_twilio->InputTextType = "text";
+        $this->sid_twilio->Nullable = false; // NOT NULL field
+        $this->sid_twilio->Required = true; // Required field
+        $this->sid_twilio->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
+        $this->Fields['sid_twilio'] = &$this->sid_twilio;
+
+        // token_twilio
+        $this->token_twilio = new DbField(
+            $this, // Table
+            'x_token_twilio', // Variable name
+            'token_twilio', // Name
+            '[token_twilio]', // Expression
+            '[token_twilio]', // Basic search expression
+            200, // Type
+            50, // Size
+            -1, // Date/Time format
+            false, // Is upload field
+            '[token_twilio]', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->token_twilio->InputTextType = "text";
+        $this->token_twilio->Nullable = false; // NOT NULL field
+        $this->token_twilio->Required = true; // Required field
+        $this->token_twilio->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
+        $this->Fields['token_twilio'] = &$this->token_twilio;
 
         // Add Doctrine Cache
         $this->Cache = new ArrayCache();
@@ -232,16 +176,13 @@ class MessageTbl extends DbTable
             }
             $orderBy = in_array($curSort, ["ASC", "DESC"]) ? $sortField . " " . $curSort : "";
             $this->setSessionOrderBy($orderBy); // Save to Session
-            $sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
-            $orderBy = in_array($curSort, ["ASC", "DESC"]) ? $sortFieldList . " " . $curSort : "";
-            $this->setSessionOrderByList($orderBy); // Save to Session
         }
     }
 
     // Update field sort
     public function updateFieldSort()
     {
-        $orderBy = $this->useVirtualFields() ? $this->getSessionOrderByList() : $this->getSessionOrderBy(); // Get ORDER BY from Session
+        $orderBy = $this->getSessionOrderBy(); // Get ORDER BY from Session
         $flds = GetSortFields($orderBy);
         foreach ($this->Fields as $field) {
             $fldSort = "";
@@ -254,43 +195,6 @@ class MessageTbl extends DbTable
         }
     }
 
-    // Session ORDER BY for List page
-    public function getSessionOrderByList()
-    {
-        return Session(PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST"));
-    }
-
-    public function setSessionOrderByList($v)
-    {
-        $_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
-    }
-
-    // Current detail table name
-    public function getCurrentDetailTable()
-    {
-        return Session(PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_DETAIL_TABLE")) ?? "";
-    }
-
-    public function setCurrentDetailTable($v)
-    {
-        $_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_DETAIL_TABLE")] = $v;
-    }
-
-    // Get detail url
-    public function getDetailUrl()
-    {
-        // Detail url
-        $detailUrl = "";
-        if ($this->getCurrentDetailTable() == "sent_tbl") {
-            $detailUrl = Container("sent_tbl")->getListUrl() . "?" . Config("TABLE_SHOW_MASTER") . "=" . $this->TableVar;
-            $detailUrl .= "&" . GetForeignKeyUrl("fk_id_message", $this->id_message->CurrentValue);
-        }
-        if ($detailUrl == "") {
-            $detailUrl = "MessageTblList";
-        }
-        return $detailUrl;
-    }
-
     // Render X Axis for chart
     public function renderChartXAxis($chartVar, $chartRow)
     {
@@ -300,7 +204,7 @@ class MessageTbl extends DbTable
     // Table level SQL
     public function getSqlFrom() // From
     {
-        return ($this->SqlFrom != "") ? $this->SqlFrom : "[dbo].[message_tbl]";
+        return ($this->SqlFrom != "") ? $this->SqlFrom : "[dbo].[twilio_tbl]";
     }
 
     public function sqlFrom() // For backward compatibility
@@ -326,25 +230,6 @@ class MessageTbl extends DbTable
     public function setSqlSelect($v)
     {
         $this->SqlSelect = $v;
-    }
-
-    public function getSqlSelectList() // Select for List page
-    {
-        if ($this->SqlSelectList) {
-            return $this->SqlSelectList;
-        }
-        $from = "(SELECT *, (SELECT TOP 1 CONCAT([name_contact],'" . ValueSeparator(1, $this->to_message) . "',[phone_contact]) FROM [dbo].[contact_tbl] [TMP_LOOKUPTABLE] WHERE [TMP_LOOKUPTABLE].[id_contact] = [message_tbl].[to_message]) AS [EV__to_message] FROM [dbo].[message_tbl])";
-        return $from . " [TMP_TABLE]";
-    }
-
-    public function sqlSelectList() // For backward compatibility
-    {
-        return $this->getSqlSelectList();
-    }
-
-    public function setSqlSelectList($v)
-    {
-        $this->SqlSelectList = $v;
     }
 
     public function getSqlWhere() // Where
@@ -525,15 +410,9 @@ class MessageTbl extends DbTable
         AddFilter($filter, $this->CurrentFilter);
         $filter = $this->applyUserIDFilters($filter);
         $this->recordsetSelecting($filter);
-        if ($this->useVirtualFields()) {
-            $select = "*";
-            $from = $this->getSqlSelectList();
-            $sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
-        } else {
-            $select = $this->getSqlSelect();
-            $from = $this->getSqlFrom();
-            $sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
-        }
+        $select = $this->getSqlSelect();
+        $from = $this->getSqlFrom();
+        $sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
         $this->Sort = $sort;
         return $this->buildSelectSql(
             $select,
@@ -551,40 +430,13 @@ class MessageTbl extends DbTable
     public function getOrderBy()
     {
         $orderBy = $this->getSqlOrderBy();
-        $sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
+        $sort = $this->getSessionOrderBy();
         if ($orderBy != "" && $sort != "") {
             $orderBy .= ", " . $sort;
         } elseif ($sort != "") {
             $orderBy = $sort;
         }
         return $orderBy;
-    }
-
-    // Check if virtual fields is used in SQL
-    protected function useVirtualFields()
-    {
-        $where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
-        $orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
-        if ($where != "") {
-            $where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
-        }
-        if ($orderBy != "") {
-            $orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
-        }
-        if ($this->BasicSearch->getKeyword() != "") {
-            return true;
-        }
-        if (
-            $this->to_message->AdvancedSearch->SearchValue != "" ||
-            $this->to_message->AdvancedSearch->SearchValue2 != "" ||
-            ContainsString($where, " " . $this->to_message->VirtualExpression . " ")
-        ) {
-            return true;
-        }
-        if (ContainsString($orderBy, " " . $this->to_message->VirtualExpression . " ")) {
-            return true;
-        }
-        return false;
     }
 
     // Get record count based on filter (for detail record count in master table pages)
@@ -612,11 +464,7 @@ class MessageTbl extends DbTable
         $select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : $this->getQueryBuilder()->select("*");
         $groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
         $having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-        if ($this->useVirtualFields()) {
-            $sql = $this->buildSelectSql("*", $this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
-        } else {
-            $sql = $this->buildSelectSql($select, $this->getSqlFrom(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
-        }
+        $sql = $this->buildSelectSql($select, $this->getSqlFrom(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
         $cnt = $this->getRecordCount($sql);
         return $cnt;
     }
@@ -653,9 +501,6 @@ class MessageTbl extends DbTable
             $this->DbErrorMessage = $e->getMessage();
         }
         if ($success) {
-            // Get insert id if necessary
-            $this->id_message->setDbValue($conn->lastInsertId());
-            $rs['id_message'] = $this->id_message->DbValue;
         }
         return $success;
     }
@@ -693,33 +538,6 @@ class MessageTbl extends DbTable
     // Update
     public function update(&$rs, $where = "", $rsold = null, $curfilter = true)
     {
-        // Cascade Update detail table 'sent_tbl'
-        $cascadeUpdate = false;
-        $rscascade = [];
-        if ($rsold && (isset($rs['id_message']) && $rsold['id_message'] != $rs['id_message'])) { // Update detail field 'fk_id_message'
-            $cascadeUpdate = true;
-            $rscascade['fk_id_message'] = $rs['id_message'];
-        }
-        if ($cascadeUpdate) {
-            $rswrk = Container("sent_tbl")->loadRs("[fk_id_message] = " . QuotedValue($rsold['id_message'], DATATYPE_NUMBER, 'DB'))->fetchAllAssociative();
-            foreach ($rswrk as $rsdtlold) {
-                $rskey = [];
-                $fldname = 'id_sent';
-                $rskey[$fldname] = $rsdtlold[$fldname];
-                $rsdtlnew = array_merge($rsdtlold, $rscascade);
-                // Call Row_Updating event
-                $success = Container("sent_tbl")->rowUpdating($rsdtlold, $rsdtlnew);
-                if ($success) {
-                    $success = Container("sent_tbl")->update($rscascade, $rskey, $rsdtlold);
-                }
-                if (!$success) {
-                    return false;
-                }
-                // Call Row_Updated event
-                Container("sent_tbl")->rowUpdated($rsdtlold, $rsdtlnew);
-            }
-        }
-
         // If no field is updated, execute may return 0. Treat as success
         try {
             $success = $this->updateSql($rs, $where, $curfilter)->execute();
@@ -728,13 +546,6 @@ class MessageTbl extends DbTable
         } catch (\Exception $e) {
             $success = false;
             $this->DbErrorMessage = $e->getMessage();
-        }
-
-        // Return auto increment field
-        if ($success) {
-            if (!isset($rs['id_message']) && !EmptyValue($this->id_message->CurrentValue)) {
-                $rs['id_message'] = $this->id_message->CurrentValue;
-            }
         }
         return $success;
     }
@@ -755,9 +566,6 @@ class MessageTbl extends DbTable
             $where = $this->arrayToFilter($where);
         }
         if ($rs) {
-            if (array_key_exists('id_message', $rs)) {
-                AddFilter($where, QuotedName('id_message', $this->Dbid) . '=' . QuotedValue($rs['id_message'], $this->id_message->DataType, $this->Dbid));
-            }
         }
         $filter = ($curfilter) ? $this->CurrentFilter : "";
         AddFilter($filter, $where);
@@ -768,30 +576,6 @@ class MessageTbl extends DbTable
     public function delete(&$rs, $where = "", $curfilter = false)
     {
         $success = true;
-
-        // Cascade delete detail table 'sent_tbl'
-        $dtlrows = Container("sent_tbl")->loadRs("[fk_id_message] = " . QuotedValue($rs['id_message'], DATATYPE_NUMBER, "DB"))->fetchAllAssociative();
-        // Call Row Deleting event
-        foreach ($dtlrows as $dtlrow) {
-            $success = Container("sent_tbl")->rowDeleting($dtlrow);
-            if (!$success) {
-                break;
-            }
-        }
-        if ($success) {
-            foreach ($dtlrows as $dtlrow) {
-                $success = Container("sent_tbl")->delete($dtlrow); // Delete
-                if (!$success) {
-                    break;
-                }
-            }
-        }
-        // Call Row Deleted event
-        if ($success) {
-            foreach ($dtlrows as $dtlrow) {
-                Container("sent_tbl")->rowDeleted($dtlrow);
-            }
-        }
         if ($success) {
             try {
                 $success = $this->deleteSql($rs, $where, $curfilter)->execute();
@@ -810,10 +594,8 @@ class MessageTbl extends DbTable
         if (!is_array($row)) {
             return;
         }
-        $this->id_message->DbValue = $row['id_message'];
-        $this->created_at_message->DbValue = $row['created_at_message'];
-        $this->to_message->DbValue = $row['to_message'];
-        $this->text_message->DbValue = $row['text_message'];
+        $this->sid_twilio->DbValue = $row['sid_twilio'];
+        $this->token_twilio->DbValue = $row['token_twilio'];
     }
 
     // Delete uploaded files
@@ -825,19 +607,13 @@ class MessageTbl extends DbTable
     // Record filter WHERE clause
     protected function sqlKeyFilter()
     {
-        return "[id_message] = @id_message@";
+        return "";
     }
 
     // Get Key
     public function getKey($current = false)
     {
         $keys = [];
-        $val = $current ? $this->id_message->CurrentValue : $this->id_message->OldValue;
-        if (EmptyValue($val)) {
-            return "";
-        } else {
-            $keys[] = $val;
-        }
         return implode(Config("COMPOSITE_KEY_SEPARATOR"), $keys);
     }
 
@@ -846,12 +622,7 @@ class MessageTbl extends DbTable
     {
         $this->OldKey = strval($key);
         $keys = explode(Config("COMPOSITE_KEY_SEPARATOR"), $this->OldKey);
-        if (count($keys) == 1) {
-            if ($current) {
-                $this->id_message->CurrentValue = $keys[0];
-            } else {
-                $this->id_message->OldValue = $keys[0];
-            }
+        if (count($keys) == 0) {
         }
     }
 
@@ -859,19 +630,6 @@ class MessageTbl extends DbTable
     public function getRecordFilter($row = null, $current = false)
     {
         $keyFilter = $this->sqlKeyFilter();
-        if (is_array($row)) {
-            $val = array_key_exists('id_message', $row) ? $row['id_message'] : null;
-        } else {
-            $val = !EmptyValue($this->id_message->OldValue) && !$current ? $this->id_message->OldValue : $this->id_message->CurrentValue;
-        }
-        if (!is_numeric($val)) {
-            return "0=1"; // Invalid key
-        }
-        if ($val === null) {
-            return "0=1"; // Invalid key
-        } else {
-            $keyFilter = str_replace("@id_message@", AdjustSql($val, $this->Dbid), $keyFilter); // Replace key value
-        }
         return $keyFilter;
     }
 
@@ -885,7 +643,7 @@ class MessageTbl extends DbTable
         if ($referUrl != "" && $referPageName != CurrentPageName() && $referPageName != "login") { // Referer not same page or login page
             $_SESSION[$name] = $referUrl; // Save to Session
         }
-        return $_SESSION[$name] ?? GetUrl("MessageTblList");
+        return $_SESSION[$name] ?? GetUrl("TwilioTblList");
     }
 
     // Set return page URL
@@ -898,11 +656,11 @@ class MessageTbl extends DbTable
     public function getModalCaption($pageName)
     {
         global $Language;
-        if ($pageName == "MessageTblView") {
+        if ($pageName == "TwilioTblView") {
             return $Language->phrase("View");
-        } elseif ($pageName == "MessageTblEdit") {
+        } elseif ($pageName == "TwilioTblEdit") {
             return $Language->phrase("Edit");
-        } elseif ($pageName == "MessageTblAdd") {
+        } elseif ($pageName == "TwilioTblAdd") {
             return $Language->phrase("Add");
         }
         return "";
@@ -913,15 +671,15 @@ class MessageTbl extends DbTable
     {
         switch (strtolower($action)) {
             case Config("API_VIEW_ACTION"):
-                return "MessageTblView";
+                return "TwilioTblView";
             case Config("API_ADD_ACTION"):
-                return "MessageTblAdd";
+                return "TwilioTblAdd";
             case Config("API_EDIT_ACTION"):
-                return "MessageTblEdit";
+                return "TwilioTblEdit";
             case Config("API_DELETE_ACTION"):
-                return "MessageTblDelete";
+                return "TwilioTblDelete";
             case Config("API_LIST_ACTION"):
-                return "MessageTblList";
+                return "TwilioTblList";
             default:
                 return "";
         }
@@ -942,16 +700,16 @@ class MessageTbl extends DbTable
     // List URL
     public function getListUrl()
     {
-        return "MessageTblList";
+        return "TwilioTblList";
     }
 
     // View URL
     public function getViewUrl($parm = "")
     {
         if ($parm != "") {
-            $url = $this->keyUrl("MessageTblView", $parm);
+            $url = $this->keyUrl("TwilioTblView", $parm);
         } else {
-            $url = $this->keyUrl("MessageTblView", Config("TABLE_SHOW_DETAIL") . "=");
+            $url = $this->keyUrl("TwilioTblView", Config("TABLE_SHOW_DETAIL") . "=");
         }
         return $this->addMasterUrl($url);
     }
@@ -960,9 +718,9 @@ class MessageTbl extends DbTable
     public function getAddUrl($parm = "")
     {
         if ($parm != "") {
-            $url = "MessageTblAdd?" . $parm;
+            $url = "TwilioTblAdd?" . $parm;
         } else {
-            $url = "MessageTblAdd";
+            $url = "TwilioTblAdd";
         }
         return $this->addMasterUrl($url);
     }
@@ -970,36 +728,28 @@ class MessageTbl extends DbTable
     // Edit URL
     public function getEditUrl($parm = "")
     {
-        if ($parm != "") {
-            $url = $this->keyUrl("MessageTblEdit", $parm);
-        } else {
-            $url = $this->keyUrl("MessageTblEdit", Config("TABLE_SHOW_DETAIL") . "=");
-        }
+        $url = $this->keyUrl("TwilioTblEdit", $parm);
         return $this->addMasterUrl($url);
     }
 
     // Inline edit URL
     public function getInlineEditUrl()
     {
-        $url = $this->keyUrl("MessageTblList", "action=edit");
+        $url = $this->keyUrl("TwilioTblList", "action=edit");
         return $this->addMasterUrl($url);
     }
 
     // Copy URL
     public function getCopyUrl($parm = "")
     {
-        if ($parm != "") {
-            $url = $this->keyUrl("MessageTblAdd", $parm);
-        } else {
-            $url = $this->keyUrl("MessageTblAdd", Config("TABLE_SHOW_DETAIL") . "=");
-        }
+        $url = $this->keyUrl("TwilioTblAdd", $parm);
         return $this->addMasterUrl($url);
     }
 
     // Inline copy URL
     public function getInlineCopyUrl()
     {
-        $url = $this->keyUrl("MessageTblList", "action=copy");
+        $url = $this->keyUrl("TwilioTblList", "action=copy");
         return $this->addMasterUrl($url);
     }
 
@@ -1009,7 +759,7 @@ class MessageTbl extends DbTable
         if ($this->UseAjaxActions && ConvertToBool(Param("infinitescroll")) && CurrentPageID() == "list") {
             return $this->keyUrl(GetApiUrl(Config("API_DELETE_ACTION") . "/" . $this->TableVar));
         } else {
-            return $this->keyUrl("MessageTblDelete");
+            return $this->keyUrl("TwilioTblDelete");
         }
     }
 
@@ -1022,7 +772,6 @@ class MessageTbl extends DbTable
     public function keyToJson($htmlEncode = false)
     {
         $json = "";
-        $json .= "\"id_message\":" . JsonEncode($this->id_message->CurrentValue, "number");
         $json = "{" . $json . "}";
         if ($htmlEncode) {
             $json = HtmlEncode($json);
@@ -1033,11 +782,6 @@ class MessageTbl extends DbTable
     // Add key value to URL
     public function keyUrl($url, $parm = "")
     {
-        if ($this->id_message->CurrentValue !== null) {
-            $url .= "/" . $this->encodeKeyValue($this->id_message->CurrentValue);
-        } else {
-            return "javascript:ew.alert(ew.language.phrase('InvalidRecord'));";
-        }
         if ($parm != "") {
             $url .= "?" . $parm;
         }
@@ -1102,23 +846,12 @@ class MessageTbl extends DbTable
             $arKeys = Param("key_m");
             $cnt = count($arKeys);
         } else {
-            if (($keyValue = Param("id_message") ?? Route("id_message")) !== null) {
-                $arKeys[] = $keyValue;
-            } elseif (IsApi() && (($keyValue = Key(0) ?? Route(2)) !== null)) {
-                $arKeys[] = $keyValue;
-            } else {
-                $arKeys = null; // Do not setup
-            }
-
             //return $arKeys; // Do not return yet, so the values will also be checked by the following code
         }
         // Check keys
         $ar = [];
         if (is_array($arKeys)) {
             foreach ($arKeys as $key) {
-                if (!is_numeric($key)) {
-                    continue;
-                }
                 $ar[] = $key;
             }
         }
@@ -1147,11 +880,6 @@ class MessageTbl extends DbTable
             if ($keyFilter != "") {
                 $keyFilter .= " OR ";
             }
-            if ($setCurrent) {
-                $this->id_message->CurrentValue = $key;
-            } else {
-                $this->id_message->OldValue = $key;
-            }
             $keyFilter .= "(" . $this->getRecordFilter() . ")";
         }
         return $keyFilter;
@@ -1175,17 +903,15 @@ class MessageTbl extends DbTable
         } else {
             return;
         }
-        $this->id_message->setDbValue($row['id_message']);
-        $this->created_at_message->setDbValue($row['created_at_message']);
-        $this->to_message->setDbValue($row['to_message']);
-        $this->text_message->setDbValue($row['text_message']);
+        $this->sid_twilio->setDbValue($row['sid_twilio']);
+        $this->token_twilio->setDbValue($row['token_twilio']);
     }
 
     // Render list content
     public function renderListContent($filter)
     {
         global $Response;
-        $listPage = "MessageTblList";
+        $listPage = "TwilioTblList";
         $listClass = PROJECT_NAMESPACE . $listPage;
         $page = new $listClass();
         $page->loadRecordsetFromFilter($filter);
@@ -1209,68 +935,23 @@ class MessageTbl extends DbTable
 
         // Common render codes
 
-        // id_message
+        // sid_twilio
 
-        // created_at_message
+        // token_twilio
 
-        // to_message
+        // sid_twilio
+        $this->sid_twilio->ViewValue = $this->sid_twilio->CurrentValue;
 
-        // text_message
+        // token_twilio
+        $this->token_twilio->ViewValue = $this->token_twilio->CurrentValue;
 
-        // id_message
-        $this->id_message->ViewValue = $this->id_message->CurrentValue;
-        $this->id_message->ViewValue = FormatNumber($this->id_message->ViewValue, $this->id_message->formatPattern());
+        // sid_twilio
+        $this->sid_twilio->HrefValue = "";
+        $this->sid_twilio->TooltipValue = "";
 
-        // created_at_message
-        $this->created_at_message->ViewValue = $this->created_at_message->CurrentValue;
-        $this->created_at_message->ViewValue = FormatDateTime($this->created_at_message->ViewValue, $this->created_at_message->formatPattern());
-
-        // to_message
-        if ($this->to_message->VirtualValue != "") {
-            $this->to_message->ViewValue = $this->to_message->VirtualValue;
-        } else {
-            $this->to_message->ViewValue = $this->to_message->CurrentValue;
-            $curVal = strval($this->to_message->CurrentValue);
-            if ($curVal != "") {
-                $this->to_message->ViewValue = $this->to_message->lookupCacheOption($curVal);
-                if ($this->to_message->ViewValue === null) { // Lookup from database
-                    $filterWrk = SearchFilter("[id_contact]", "=", $curVal, DATATYPE_NUMBER, "");
-                    $sqlWrk = $this->to_message->Lookup->getSql(false, $filterWrk, '', $this, true, true);
-                    $conn = Conn();
-                    $config = $conn->getConfiguration();
-                    $config->setResultCacheImpl($this->Cache);
-                    $rswrk = $conn->executeCacheQuery($sqlWrk, [], [], $this->CacheProfile)->fetchAll();
-                    $ari = count($rswrk);
-                    if ($ari > 0) { // Lookup values found
-                        $arwrk = $this->to_message->Lookup->renderViewRow($rswrk[0]);
-                        $this->to_message->ViewValue = $this->to_message->displayValue($arwrk);
-                    } else {
-                        $this->to_message->ViewValue = FormatNumber($this->to_message->CurrentValue, $this->to_message->formatPattern());
-                    }
-                }
-            } else {
-                $this->to_message->ViewValue = null;
-            }
-        }
-
-        // text_message
-        $this->text_message->ViewValue = $this->text_message->CurrentValue;
-
-        // id_message
-        $this->id_message->HrefValue = "";
-        $this->id_message->TooltipValue = "";
-
-        // created_at_message
-        $this->created_at_message->HrefValue = "";
-        $this->created_at_message->TooltipValue = "";
-
-        // to_message
-        $this->to_message->HrefValue = "";
-        $this->to_message->TooltipValue = "";
-
-        // text_message
-        $this->text_message->HrefValue = "";
-        $this->text_message->TooltipValue = "";
+        // token_twilio
+        $this->token_twilio->HrefValue = "";
+        $this->token_twilio->TooltipValue = "";
 
         // Call Row Rendered event
         $this->rowRendered();
@@ -1287,25 +968,21 @@ class MessageTbl extends DbTable
         // Call Row Rendering event
         $this->rowRendering();
 
-        // id_message
-        $this->id_message->setupEditAttributes();
-        $this->id_message->EditValue = $this->id_message->CurrentValue;
-        $this->id_message->EditValue = FormatNumber($this->id_message->EditValue, $this->id_message->formatPattern());
+        // sid_twilio
+        $this->sid_twilio->setupEditAttributes();
+        if (!$this->sid_twilio->Raw) {
+            $this->sid_twilio->CurrentValue = HtmlDecode($this->sid_twilio->CurrentValue);
+        }
+        $this->sid_twilio->EditValue = $this->sid_twilio->CurrentValue;
+        $this->sid_twilio->PlaceHolder = RemoveHtml($this->sid_twilio->caption());
 
-        // created_at_message
-        $this->created_at_message->setupEditAttributes();
-        $this->created_at_message->EditValue = FormatDateTime($this->created_at_message->CurrentValue, $this->created_at_message->formatPattern());
-        $this->created_at_message->PlaceHolder = RemoveHtml($this->created_at_message->caption());
-
-        // to_message
-        $this->to_message->setupEditAttributes();
-        $this->to_message->EditValue = $this->to_message->CurrentValue;
-        $this->to_message->PlaceHolder = RemoveHtml($this->to_message->caption());
-
-        // text_message
-        $this->text_message->setupEditAttributes();
-        $this->text_message->EditValue = $this->text_message->CurrentValue;
-        $this->text_message->PlaceHolder = RemoveHtml($this->text_message->caption());
+        // token_twilio
+        $this->token_twilio->setupEditAttributes();
+        if (!$this->token_twilio->Raw) {
+            $this->token_twilio->CurrentValue = HtmlDecode($this->token_twilio->CurrentValue);
+        }
+        $this->token_twilio->EditValue = $this->token_twilio->CurrentValue;
+        $this->token_twilio->PlaceHolder = RemoveHtml($this->token_twilio->caption());
 
         // Call Row Rendered event
         $this->rowRendered();
@@ -1335,14 +1012,11 @@ class MessageTbl extends DbTable
             if ($doc->Horizontal) { // Horizontal format, write header
                 $doc->beginExportRow();
                 if ($exportPageType == "view") {
-                    $doc->exportCaption($this->id_message);
-                    $doc->exportCaption($this->created_at_message);
-                    $doc->exportCaption($this->to_message);
-                    $doc->exportCaption($this->text_message);
+                    $doc->exportCaption($this->sid_twilio);
+                    $doc->exportCaption($this->token_twilio);
                 } else {
-                    $doc->exportCaption($this->created_at_message);
-                    $doc->exportCaption($this->to_message);
-                    $doc->exportCaption($this->text_message);
+                    $doc->exportCaption($this->sid_twilio);
+                    $doc->exportCaption($this->token_twilio);
                 }
                 $doc->endExportRow();
             }
@@ -1372,14 +1046,11 @@ class MessageTbl extends DbTable
                 if (!$doc->ExportCustom) {
                     $doc->beginExportRow($rowCnt); // Allow CSS styles if enabled
                     if ($exportPageType == "view") {
-                        $doc->exportField($this->id_message);
-                        $doc->exportField($this->created_at_message);
-                        $doc->exportField($this->to_message);
-                        $doc->exportField($this->text_message);
+                        $doc->exportField($this->sid_twilio);
+                        $doc->exportField($this->token_twilio);
                     } else {
-                        $doc->exportField($this->created_at_message);
-                        $doc->exportField($this->to_message);
-                        $doc->exportField($this->text_message);
+                        $doc->exportField($this->sid_twilio);
+                        $doc->exportField($this->token_twilio);
                     }
                     $doc->endExportRow($rowCnt);
                 }
@@ -1455,38 +1126,13 @@ class MessageTbl extends DbTable
     {
         // Enter your code here
         // To cancel, set return value to false
-        date_default_timezone_set('America/El_Salvador');
-        $date = date('m/d/Y h:i:s a', time());
-        $rsnew['created_at_message']=$date;
         return true;
     }
 
+    // Row Inserted event
     public function rowInserted($rsold, &$rsnew)
     {
-                    //Log("Row Inserted");
-                    // Insert record
-                // NOTE: Modify your SQL here, replace the table name, field name and field values
-
-                //**  ADD LOG TO SENT TABLE  **///
-                //$date_default_timezone_set('America/El_Salvador');
-                $date = date('m/d/Y h:i:s a', time());
-                $rsnew['created_at_message']=$date;
-                $sent_at=$rsnew['created_at_message'];
-                $id_message=$rsnew['id_message'];
-                $twiliocode="12345";
-                $insert_sent = ExecuteStatement("INSERT INTO sent_tbl (datetime_sent,fk_id_message,twiliocode_sent) VALUES ('$sent_at','$id_message','$twiliocode')");
-
-                //** REDIRECT TO SENT TABLE **//
-                //header("Location: http://localhost/appmessages/SentTblList");
-                //header("Location: sendsms.php");
-                //header("Location: http://www.google.com");
-               //header("Location: http://localhost/appmessages/ContactTblList");
-               $to = ExecuteScalar("SELECT phone_contact FROM contact_tbl WHERE id_contact=$rsnew[to_message]");// Row Inserted event           
-               $message=$rsnew['text_message'];
-
-               //$url="sendsms.php?to=".$to."&message=".$message;
-               $url="Send?to=".$to."&message=".$message;
-               $this->terminate($url);
+        //Log("Row Inserted");
     }
 
     // Row Updating event

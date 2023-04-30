@@ -49,6 +49,18 @@ return function (App $app) {
         }
     );
 
+    // send
+    $app->map(["GET", "POST", "OPTIONS"], '/Send[/{params:.*}]', SendController::class . ':custom')->add(PermissionMiddleware::class)->setName('Send-send-custom'); // custom
+
+    // twilio_tbl
+    $app->map(["GET","POST","OPTIONS"], '/TwilioTblList', TwilioTblController::class . ':list')->add(PermissionMiddleware::class)->setName('TwilioTblList-twilio_tbl-list'); // list
+    $app->group(
+        '/twilio_tbl',
+        function (RouteCollectorProxy $group) {
+            $group->map(["GET","POST","OPTIONS"], '/' . Config('LIST_ACTION') . '', TwilioTblController::class . ':list')->add(PermissionMiddleware::class)->setName('twilio_tbl/list-twilio_tbl-list-2'); // list
+        }
+    );
+
     // captcha
     $app->map(["GET","OPTIONS"], '/captcha[/{page}]', OthersController::class . ':captcha')->add(PermissionMiddleware::class)->setName('captcha');
 

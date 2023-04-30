@@ -10,12 +10,12 @@ use Doctrine\DBAL\Query\QueryBuilder;
 /**
  * Page class
  */
-class Captcha
+class Send
 {
     use MessagesTrait;
 
     // Page ID
-    public $PageID = "captcha";
+    public $PageID = "custom";
 
     // Project ID
     public $ProjectID = PROJECT_ID;
@@ -27,7 +27,7 @@ class Captcha
     public $TableVar;
 
     // Page object name
-    public $PageObjName = "Captcha";
+    public $PageObjName = "Send";
 
     // View file path
     public $View = null;
@@ -39,13 +39,12 @@ class Captcha
     public $RenderingView = false;
 
     // CSS class/style
-    public $CurrentPageName = "TwilioTblList";
+    public $ReportContainerClass = "ew-grid";
+    public $CurrentPageName = "SendController";
 
     // Page headings
     public $Heading = "";
     public $Subheading = "";
-    public $PageHeader;
-    public $PageFooter;
 
     // Page layout
     public $UseLayout = true;
@@ -96,39 +95,21 @@ class Captcha
         return rtrim(UrlFor($route->getName(), $args), "/") . "?";
     }
 
-    // Show Page Header
-    public function showPageHeader()
-    {
-        $header = $this->PageHeader;
-        $this->pageDataRendering($header);
-        if ($header != "") { // Header exists, display
-            echo '<p id="ew-page-header">' . $header . '</p>';
-        }
-    }
-
-    // Show Page Footer
-    public function showPageFooter()
-    {
-        $footer = $this->PageFooter;
-        $this->pageDataRendered($footer);
-        if ($footer != "") { // Footer exists, display
-            echo '<p id="ew-page-footer">' . $footer . '</p>';
-        }
-    }
-
     // Constructor
     public function __construct()
     {
         global $Language, $DashboardReport, $DebugTimer;
-
-        // Table CSS class
-        $this->TableClass = "table table-striped table-bordered table-hover table-sm ew-view-table";
 
         // Initialize
         $GLOBALS["Page"] = &$this;
 
         // Language object
         $Language = Container("language");
+
+        // Table name (for backward compatibility only)
+        if (!defined(PROJECT_NAMESPACE . "TABLE_NAME")) {
+            define(PROJECT_NAMESPACE . "TABLE_NAME", 'send.php');
+        }
 
         // Start timer
         $DebugTimer = Container("timer");
@@ -200,9 +181,6 @@ class Captcha
 
         // Global Page Unloaded event (in userfn*.php)
         Page_Unloaded();
-        if (!IsApi() && method_exists($this, "pageRedirecting")) {
-            $this->pageRedirecting($url);
-        }
 
         // Close connection
         CloseConnections();
@@ -235,18 +213,78 @@ class Captcha
     }
 
     /**
-    * Page run
-    *
-    * @return void
-    */
+     * Page run
+     *
+     * @return void
+     */
     public function run()
     {
-        // Captcha
-        $sessionName = Captcha()->getSessionName();
-        $_SESSION[$sessionName] = Captcha()->show();
+        global $ExportType, $UserProfile, $Language, $Security, $CurrentForm;
 
-        // No need for view
-        $this->terminate();
-        return;
+        // Use layout
+        $this->UseLayout = $this->UseLayout && ConvertToBool(Param(Config("PAGE_LAYOUT"), true));
+
+        // View
+        $this->View = Get(Config("VIEW"));
+        if (Get("export") !== null) {
+            $ExportType = Get("export"); // Get export parameter, used in header
+        }
+
+        // Global Page Loading event (in userfn*.php)
+        Page_Loading();
+
+        // Page Load event
+        if (method_exists($this, "pageLoad")) {
+            $this->pageLoad();
+        }
+
+        // Set up Breadcrumb
+        $this->setupBreadcrumb();
+
+        // Set LoginStatus / Page_Rendering / Page_Render
+        if (!IsApi() && !$this->isTerminated()) {
+            // Pass login status to client side
+            SetClientVar("login", LoginStatus());
+
+            // Global Page Rendering event (in userfn*.php)
+            Page_Rendering();
+
+            // Page Render event
+            if (method_exists($this, "pageRender")) {
+                $this->pageRender();
+            }
+
+            // Render search option
+            if (method_exists($this, "renderSearchOptions")) {
+                $this->renderSearchOptions();
+            }
+        }
+    }
+
+    // Set up Breadcrumb
+    protected function setupBreadcrumb()
+    {
+        global $Breadcrumb, $Language;
+        $Breadcrumb = new Breadcrumb("index");
+        $Breadcrumb->add("custom", "send", CurrentUrl(), "", "send", true);
+        $this->Heading = $Language->TablePhrase("send", "TblCaption");
+    }
+
+    // Page Load event
+    public function pageLoad()
+    {
+        //Log("Page Load");
+    }
+
+    // Page Unload event
+    public function pageUnload()
+    {
+        //Log("Page Unload");
+    }
+
+    // Page Render event
+    public function pageRender()
+    {
+        //Log("Page Render");
     }
 }
