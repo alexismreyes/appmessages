@@ -1460,22 +1460,31 @@ class MessageTbl extends DbTable
         $rsnew['created_at_message']=$date;
         return true;
     }
-    // Row Inserted event
+
     public function rowInserted($rsold, &$rsnew)
     {
-        //Log("Row Inserted");
-        // Insert record
-    // NOTE: Modify your SQL here, replace the table name, field name and field values
-    date_default_timezone_set('America/El_Salvador');
-    $date = date('m/d/Y h:i:s a', time());
-    $rsnew['created_at_message']=$date;
-    $sent_at=$rsnew['created_at_message'];
-    $id_message=$rsnew['id_message'];
-    $twiliocode="12345";
+                    //Log("Row Inserted");
+                    // Insert record
+                // NOTE: Modify your SQL here, replace the table name, field name and field values
 
-    //$insert_sent = ExecuteStatement("INSERT INTO sent_tbl (datetime_sent,fk_id_message,twiliocode_sent) VALUES ($sent_at,$id_message,$twiliocode)");
-    $insert_sent = ExecuteStatement("INSERT INTO sent_tbl (datetime_sent,fk_id_message,twiliocode_sent) VALUES ('$sent_at','$id_message','$twiliocode')");
-    header("Location: http://localhost/appmessages/SentTblList");
+                //**  ADD LOG TO SENT TABLE  **///
+                //$date_default_timezone_set('America/El_Salvador');
+                $date = date('m/d/Y h:i:s a', time());
+                $rsnew['created_at_message']=$date;
+                $sent_at=$rsnew['created_at_message'];
+                $id_message=$rsnew['id_message'];
+                $twiliocode="12345";
+                $insert_sent = ExecuteStatement("INSERT INTO sent_tbl (datetime_sent,fk_id_message,twiliocode_sent) VALUES ('$sent_at','$id_message','$twiliocode')");
+
+                //** REDIRECT TO SENT TABLE **//
+                //header("Location: http://localhost/appmessages/SentTblList");
+                //header("Location: sendsms.php");
+                //header("Location: http://www.google.com");
+               //header("Location: http://localhost/appmessages/ContactTblList");
+               $to = ExecuteScalar("SELECT phone_contact FROM contact_tbl WHERE id_contact=$rsnew[to_message]");// Row Inserted event           
+               $message=$rsnew['text_message'];
+               $url="sendsms.php?to=".$to."&message=".$message;
+               $this->terminate($url);
     }
 
     // Row Updating event

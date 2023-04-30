@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ew-language version="19.5.0" id="en-US" name="English (US)" desc="English (US)" author="e.World Technology Limited" date="2023/4/29">
+<ew-language version="19.5.0" id="en-US" name="English (US)" desc="English (US)" author="e.World Technology Limited" date="2023/4/30">
   <!--
     IMPORTANT NOTES:
     1. Language ID must be RFC 4646 language tags (which use hyphen, not underscore), e.g. en-US, fr-CA, fr-FR,
@@ -1159,6 +1159,9 @@
   <project>
     <phrase id="bodytitle" value="CBS Messages App" />
     <phrase id="footertext" value="&amp;copy;2022 e.World Technology Limited. All rights reserved." />
+    <menu id="6">
+      <phrase id="menutext" value="SENDMESSAGE" />
+    </menu>
     <menu id="1">
       <phrase id="menutext" value="Send" />
     </menu>
@@ -1212,6 +1215,9 @@
       <field id="phone_contact">
         <phrase id="fldcaption" value="Phone" />
       </field>
+    </table>
+    <table id="sendsms">
+      <phrase id="tblcaption" value="SENDMESSAGE" />
     </table>
   </project>
 </ew-language>

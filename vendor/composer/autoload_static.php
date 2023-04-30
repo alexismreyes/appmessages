@@ -24,6 +24,10 @@ class ComposerStaticInit8946300f8d1bc5b320766f48bcf6e5ca
         array (
             'Whoops\\' => 7,
         ),
+        'T' => 
+        array (
+            'Twilio\\' => 7,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Php81\\' => 23,
@@ -113,6 +117,10 @@ class ComposerStaticInit8946300f8d1bc5b320766f48bcf6e5ca
         'Whoops\\' => 
         array (
             0 => __DIR__ . '/..' . '/filp/whoops/src/Whoops',
+        ),
+        'Twilio\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/twilio/sdk/src/Twilio',
         ),
         'Symfony\\Polyfill\\Php81\\' => 
         array (

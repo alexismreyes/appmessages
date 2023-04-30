@@ -41,7 +41,8 @@
 		"jawira/case-converter": "^3.5.1",
 		"filp/whoops": "^2.14.5",
 		"giggsey/libphonenumber-for-php": "^8.12.45",
-		"hkvstore/dompdf": "~2.0.0"
+		"hkvstore/dompdf": "~2.0.0",
+		"twilio/sdk": "^7.3"
 	},
 	"autoload": {
 		"psr-4": {
