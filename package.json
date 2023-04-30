@@ -1,0 +1,11 @@
+{
+    "name": "appmessage",
+    "version": "19.5.0",
+    "description": "appmessage",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "private": true,
+    "dependencies": {},
+    "engines": {
+        "node": ">=16"
+    }
+}
