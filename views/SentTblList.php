@@ -161,9 +161,6 @@ $Page->ListOptions->render("header", "left");
 <?php if ($Page->fk_id_message->Visible) { // fk_id_message ?>
         <th data-name="fk_id_message" class="<?= $Page->fk_id_message->headerCellClass() ?>"><div id="elh_sent_tbl_fk_id_message" class="sent_tbl_fk_id_message"><?= $Page->renderFieldHeader($Page->fk_id_message) ?></div></th>
 <?php } ?>
-<?php if ($Page->twiliocode_sent->Visible) { // twiliocode_sent ?>
-        <th data-name="twiliocode_sent" class="<?= $Page->twiliocode_sent->headerCellClass() ?>"><div id="elh_sent_tbl_twiliocode_sent" class="sent_tbl_twiliocode_sent"><?= $Page->renderFieldHeader($Page->twiliocode_sent) ?></div></th>
-<?php } ?>
 <?php
 // Render list options (header, right)
 $Page->ListOptions->render("header", "right");
@@ -196,14 +193,6 @@ $Page->ListOptions->render("body", "left", $Page->RowCount);
 <span id="el<?= $Page->RowCount ?>_sent_tbl_fk_id_message" class="el_sent_tbl_fk_id_message">
 <span<?= $Page->fk_id_message->viewAttributes() ?>>
 <?= $Page->fk_id_message->getViewValue() ?></span>
-</span>
-</td>
-    <?php } ?>
-    <?php if ($Page->twiliocode_sent->Visible) { // twiliocode_sent ?>
-        <td data-name="twiliocode_sent"<?= $Page->twiliocode_sent->cellAttributes() ?>>
-<span id="el<?= $Page->RowCount ?>_sent_tbl_twiliocode_sent" class="el_sent_tbl_twiliocode_sent">
-<span<?= $Page->twiliocode_sent->viewAttributes() ?>>
-<?= $Page->twiliocode_sent->getViewValue() ?></span>
 </span>
 </td>
     <?php } ?>

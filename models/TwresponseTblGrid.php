@@ -544,7 +544,7 @@ class TwresponseTblGrid extends TwresponseTbl
 
         // Set up list options
         $this->setupListOptions();
-        $this->id_twresponse->setVisibility();
+        $this->id_twresponse->Visible = false;
         $this->sid_twresponse->Visible = false;
         $this->date_created_twresponse->setVisibility();
         $this->date_updated_twresponse->Visible = false;
@@ -1144,7 +1144,6 @@ class TwresponseTblGrid extends TwresponseTbl
     // Reset form status
     public function resetFormError()
     {
-        $this->id_twresponse->clearErrorMessage();
         $this->date_created_twresponse->clearErrorMessage();
         $this->to_twresponse->clearErrorMessage();
         $this->from_twresponse->clearErrorMessage();
@@ -1533,12 +1532,6 @@ class TwresponseTblGrid extends TwresponseTbl
         $CurrentForm->FormName = $this->FormName;
         $validate = !Config("SERVER_VALIDATE");
 
-        // Check field name 'id_twresponse' first before field var 'x_id_twresponse'
-        $val = $CurrentForm->hasValue("id_twresponse") ? $CurrentForm->getValue("id_twresponse") : $CurrentForm->getValue("x_id_twresponse");
-        if (!$this->id_twresponse->IsDetailKey && !$this->isGridAdd() && !$this->isAdd()) {
-            $this->id_twresponse->setFormValue($val);
-        }
-
         // Check field name 'date_created_twresponse' first before field var 'x_date_created_twresponse'
         $val = $CurrentForm->hasValue("date_created_twresponse") ? $CurrentForm->getValue("date_created_twresponse") : $CurrentForm->getValue("x_date_created_twresponse");
         if (!$this->date_created_twresponse->IsDetailKey) {
@@ -1589,6 +1582,12 @@ class TwresponseTblGrid extends TwresponseTbl
         }
         if ($CurrentForm->hasValue("o_body_twresponse")) {
             $this->body_twresponse->setOldValue($CurrentForm->getValue("o_body_twresponse"));
+        }
+
+        // Check field name 'id_twresponse' first before field var 'x_id_twresponse'
+        $val = $CurrentForm->hasValue("id_twresponse") ? $CurrentForm->getValue("id_twresponse") : $CurrentForm->getValue("x_id_twresponse");
+        if (!$this->id_twresponse->IsDetailKey && !$this->isGridAdd() && !$this->isAdd()) {
+            $this->id_twresponse->setFormValue($val);
         }
     }
 
@@ -1820,10 +1819,6 @@ class TwresponseTblGrid extends TwresponseTbl
 
         // View row
         if ($this->RowType == ROWTYPE_VIEW) {
-            // id_twresponse
-            $this->id_twresponse->ViewValue = $this->id_twresponse->CurrentValue;
-            $this->id_twresponse->ViewValue = FormatNumber($this->id_twresponse->ViewValue, $this->id_twresponse->formatPattern());
-
             // sid_twresponse
             $this->sid_twresponse->ViewValue = $this->sid_twresponse->CurrentValue;
 
@@ -1882,10 +1877,6 @@ class TwresponseTblGrid extends TwresponseTbl
             $this->fk_id_sent->ViewValue = $this->fk_id_sent->CurrentValue;
             $this->fk_id_sent->ViewValue = FormatNumber($this->fk_id_sent->ViewValue, $this->fk_id_sent->formatPattern());
 
-            // id_twresponse
-            $this->id_twresponse->HrefValue = "";
-            $this->id_twresponse->TooltipValue = "";
-
             // date_created_twresponse
             $this->date_created_twresponse->HrefValue = "";
             $this->date_created_twresponse->TooltipValue = "";
@@ -1902,8 +1893,6 @@ class TwresponseTblGrid extends TwresponseTbl
             $this->body_twresponse->HrefValue = "";
             $this->body_twresponse->TooltipValue = "";
         } elseif ($this->RowType == ROWTYPE_ADD) {
-            // id_twresponse
-
             // date_created_twresponse
             $this->date_created_twresponse->setupEditAttributes();
             if (!$this->date_created_twresponse->Raw) {
@@ -1938,9 +1927,6 @@ class TwresponseTblGrid extends TwresponseTbl
 
             // Add refer script
 
-            // id_twresponse
-            $this->id_twresponse->HrefValue = "";
-
             // date_created_twresponse
             $this->date_created_twresponse->HrefValue = "";
 
@@ -1953,11 +1939,6 @@ class TwresponseTblGrid extends TwresponseTbl
             // body_twresponse
             $this->body_twresponse->HrefValue = "";
         } elseif ($this->RowType == ROWTYPE_EDIT) {
-            // id_twresponse
-            $this->id_twresponse->setupEditAttributes();
-            $this->id_twresponse->EditValue = $this->id_twresponse->CurrentValue;
-            $this->id_twresponse->EditValue = FormatNumber($this->id_twresponse->EditValue, $this->id_twresponse->formatPattern());
-
             // date_created_twresponse
             $this->date_created_twresponse->setupEditAttributes();
             if (!$this->date_created_twresponse->Raw) {
@@ -1992,9 +1973,6 @@ class TwresponseTblGrid extends TwresponseTbl
 
             // Edit refer script
 
-            // id_twresponse
-            $this->id_twresponse->HrefValue = "";
-
             // date_created_twresponse
             $this->date_created_twresponse->HrefValue = "";
 
@@ -2027,11 +2005,6 @@ class TwresponseTblGrid extends TwresponseTbl
             return true;
         }
         $validateForm = true;
-        if ($this->id_twresponse->Required) {
-            if (!$this->id_twresponse->IsDetailKey && EmptyValue($this->id_twresponse->FormValue)) {
-                $this->id_twresponse->addErrorMessage(str_replace("%s", $this->id_twresponse->caption(), $this->id_twresponse->RequiredErrorMessage));
-            }
-        }
         if ($this->date_created_twresponse->Required) {
             if (!$this->date_created_twresponse->IsDetailKey && EmptyValue($this->date_created_twresponse->FormValue)) {
                 $this->date_created_twresponse->addErrorMessage(str_replace("%s", $this->date_created_twresponse->caption(), $this->date_created_twresponse->RequiredErrorMessage));

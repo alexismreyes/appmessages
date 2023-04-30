@@ -24,15 +24,14 @@ loadjs.ready(["wrapper", "head"], function () {
         // Add fields
         .setFields([
             ["datetime_sent", [fields.datetime_sent.visible && fields.datetime_sent.required ? ew.Validators.required(fields.datetime_sent.caption) : null, ew.Validators.datetime(fields.datetime_sent.clientFormatPattern)], fields.datetime_sent.isInvalid],
-            ["fk_id_message", [fields.fk_id_message.visible && fields.fk_id_message.required ? ew.Validators.required(fields.fk_id_message.caption) : null, ew.Validators.integer], fields.fk_id_message.isInvalid],
-            ["twiliocode_sent", [fields.twiliocode_sent.visible && fields.twiliocode_sent.required ? ew.Validators.required(fields.twiliocode_sent.caption) : null], fields.twiliocode_sent.isInvalid]
+            ["fk_id_message", [fields.fk_id_message.visible && fields.fk_id_message.required ? ew.Validators.required(fields.fk_id_message.caption) : null, ew.Validators.integer], fields.fk_id_message.isInvalid]
         ])
 
         // Check empty row
         .setEmptyRow(
             function (rowIndex) {
                 let fobj = this.getForm(),
-                    fields = [["datetime_sent",false],["fk_id_message",false],["twiliocode_sent",false]];
+                    fields = [["datetime_sent",false],["fk_id_message",false]];
                 if (fields.some(field => ew.valueChanged(fobj, rowIndex, ...field)))
                     return false;
                 return true;
@@ -84,9 +83,6 @@ $Grid->ListOptions->render("header", "left");
 <?php } ?>
 <?php if ($Grid->fk_id_message->Visible) { // fk_id_message ?>
         <th data-name="fk_id_message" class="<?= $Grid->fk_id_message->headerCellClass() ?>"><div id="elh_sent_tbl_fk_id_message" class="sent_tbl_fk_id_message"><?= $Grid->renderFieldHeader($Grid->fk_id_message) ?></div></th>
-<?php } ?>
-<?php if ($Grid->twiliocode_sent->Visible) { // twiliocode_sent ?>
-        <th data-name="twiliocode_sent" class="<?= $Grid->twiliocode_sent->headerCellClass() ?>"><div id="elh_sent_tbl_twiliocode_sent" class="sent_tbl_twiliocode_sent"><?= $Grid->renderFieldHeader($Grid->twiliocode_sent) ?></div></th>
 <?php } ?>
 <?php
 // Render list options (header, right)
@@ -265,33 +261,6 @@ loadjs.ready("fsent_tblgrid", function() {
 <?php if ($Grid->isConfirm()) { ?>
 <input type="hidden" data-table="sent_tbl" data-field="x_fk_id_message" data-hidden="1" name="fsent_tblgrid$x<?= $Grid->RowIndex ?>_fk_id_message" id="fsent_tblgrid$x<?= $Grid->RowIndex ?>_fk_id_message" value="<?= HtmlEncode($Grid->fk_id_message->FormValue) ?>">
 <input type="hidden" data-table="sent_tbl" data-field="x_fk_id_message" data-hidden="1" data-old name="fsent_tblgrid$o<?= $Grid->RowIndex ?>_fk_id_message" id="fsent_tblgrid$o<?= $Grid->RowIndex ?>_fk_id_message" value="<?= HtmlEncode($Grid->fk_id_message->OldValue) ?>">
-<?php } ?>
-<?php } ?>
-</td>
-    <?php } ?>
-    <?php if ($Grid->twiliocode_sent->Visible) { // twiliocode_sent ?>
-        <td data-name="twiliocode_sent"<?= $Grid->twiliocode_sent->cellAttributes() ?>>
-<?php if ($Grid->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?= $Grid->RowCount ?>_sent_tbl_twiliocode_sent" class="el_sent_tbl_twiliocode_sent">
-<input type="<?= $Grid->twiliocode_sent->getInputTextType() ?>" name="x<?= $Grid->RowIndex ?>_twiliocode_sent" id="x<?= $Grid->RowIndex ?>_twiliocode_sent" data-table="sent_tbl" data-field="x_twiliocode_sent" value="<?= $Grid->twiliocode_sent->EditValue ?>" size="30" maxlength="50" placeholder="<?= HtmlEncode($Grid->twiliocode_sent->getPlaceHolder()) ?>" data-format-pattern="<?= HtmlEncode($Grid->twiliocode_sent->formatPattern()) ?>"<?= $Grid->twiliocode_sent->editAttributes() ?>>
-<div class="invalid-feedback"><?= $Grid->twiliocode_sent->getErrorMessage() ?></div>
-</span>
-<input type="hidden" data-table="sent_tbl" data-field="x_twiliocode_sent" data-hidden="1" data-old name="o<?= $Grid->RowIndex ?>_twiliocode_sent" id="o<?= $Grid->RowIndex ?>_twiliocode_sent" value="<?= HtmlEncode($Grid->twiliocode_sent->OldValue) ?>">
-<?php } ?>
-<?php if ($Grid->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?= $Grid->RowCount ?>_sent_tbl_twiliocode_sent" class="el_sent_tbl_twiliocode_sent">
-<input type="<?= $Grid->twiliocode_sent->getInputTextType() ?>" name="x<?= $Grid->RowIndex ?>_twiliocode_sent" id="x<?= $Grid->RowIndex ?>_twiliocode_sent" data-table="sent_tbl" data-field="x_twiliocode_sent" value="<?= $Grid->twiliocode_sent->EditValue ?>" size="30" maxlength="50" placeholder="<?= HtmlEncode($Grid->twiliocode_sent->getPlaceHolder()) ?>" data-format-pattern="<?= HtmlEncode($Grid->twiliocode_sent->formatPattern()) ?>"<?= $Grid->twiliocode_sent->editAttributes() ?>>
-<div class="invalid-feedback"><?= $Grid->twiliocode_sent->getErrorMessage() ?></div>
-</span>
-<?php } ?>
-<?php if ($Grid->RowType == ROWTYPE_VIEW) { // View record ?>
-<span id="el<?= $Grid->RowCount ?>_sent_tbl_twiliocode_sent" class="el_sent_tbl_twiliocode_sent">
-<span<?= $Grid->twiliocode_sent->viewAttributes() ?>>
-<?= $Grid->twiliocode_sent->getViewValue() ?></span>
-</span>
-<?php if ($Grid->isConfirm()) { ?>
-<input type="hidden" data-table="sent_tbl" data-field="x_twiliocode_sent" data-hidden="1" name="fsent_tblgrid$x<?= $Grid->RowIndex ?>_twiliocode_sent" id="fsent_tblgrid$x<?= $Grid->RowIndex ?>_twiliocode_sent" value="<?= HtmlEncode($Grid->twiliocode_sent->FormValue) ?>">
-<input type="hidden" data-table="sent_tbl" data-field="x_twiliocode_sent" data-hidden="1" data-old name="fsent_tblgrid$o<?= $Grid->RowIndex ?>_twiliocode_sent" id="fsent_tblgrid$o<?= $Grid->RowIndex ?>_twiliocode_sent" value="<?= HtmlEncode($Grid->twiliocode_sent->OldValue) ?>">
 <?php } ?>
 <?php } ?>
 </td>

@@ -24,11 +24,13 @@ return function (App $app) {
     // sent_tbl
     $app->map(["GET","POST","OPTIONS"], '/SentTblList[/{id_sent}]', SentTblController::class . ':list')->add(PermissionMiddleware::class)->setName('SentTblList-sent_tbl-list'); // list
     $app->map(["GET","POST","OPTIONS"], '/SentTblView[/{id_sent}]', SentTblController::class . ':view')->add(PermissionMiddleware::class)->setName('SentTblView-sent_tbl-view'); // view
+    $app->map(["GET","POST","OPTIONS"], '/SentTblDelete[/{id_sent}]', SentTblController::class . ':delete')->add(PermissionMiddleware::class)->setName('SentTblDelete-sent_tbl-delete'); // delete
     $app->group(
         '/sent_tbl',
         function (RouteCollectorProxy $group) {
             $group->map(["GET","POST","OPTIONS"], '/' . Config('LIST_ACTION') . '[/{id_sent}]', SentTblController::class . ':list')->add(PermissionMiddleware::class)->setName('sent_tbl/list-sent_tbl-list-2'); // list
             $group->map(["GET","POST","OPTIONS"], '/' . Config('VIEW_ACTION') . '[/{id_sent}]', SentTblController::class . ':view')->add(PermissionMiddleware::class)->setName('sent_tbl/view-sent_tbl-view-2'); // view
+            $group->map(["GET","POST","OPTIONS"], '/' . Config('DELETE_ACTION') . '[/{id_sent}]', SentTblController::class . ':delete')->add(PermissionMiddleware::class)->setName('sent_tbl/delete-sent_tbl-delete-2'); // delete
         }
     );
 

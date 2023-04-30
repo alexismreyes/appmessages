@@ -19,4 +19,10 @@ class SentTblController extends ControllerBase
     {
         return $this->runPage($request, $response, $args, "SentTblView");
     }
+
+    // delete
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        return $this->runPage($request, $response, $args, "SentTblDelete");
+    }
 }

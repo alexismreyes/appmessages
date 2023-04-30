@@ -50,17 +50,11 @@ $Page->showMessage();
 <table class="<?= $Page->TableClass ?>">
     <thead>
     <tr class="ew-table-header">
-<?php if ($Page->id_sent->Visible) { // id_sent ?>
-        <th class="<?= $Page->id_sent->headerCellClass() ?>"><span id="elh_sent_tbl_id_sent" class="sent_tbl_id_sent"><?= $Page->id_sent->caption() ?></span></th>
-<?php } ?>
-<?php if ($Page->fk_id_message->Visible) { // fk_id_message ?>
-        <th class="<?= $Page->fk_id_message->headerCellClass() ?>"><span id="elh_sent_tbl_fk_id_message" class="sent_tbl_fk_id_message"><?= $Page->fk_id_message->caption() ?></span></th>
-<?php } ?>
 <?php if ($Page->datetime_sent->Visible) { // datetime_sent ?>
         <th class="<?= $Page->datetime_sent->headerCellClass() ?>"><span id="elh_sent_tbl_datetime_sent" class="sent_tbl_datetime_sent"><?= $Page->datetime_sent->caption() ?></span></th>
 <?php } ?>
-<?php if ($Page->twiliocode_sent->Visible) { // twiliocode_sent ?>
-        <th class="<?= $Page->twiliocode_sent->headerCellClass() ?>"><span id="elh_sent_tbl_twiliocode_sent" class="sent_tbl_twiliocode_sent"><?= $Page->twiliocode_sent->caption() ?></span></th>
+<?php if ($Page->fk_id_message->Visible) { // fk_id_message ?>
+        <th class="<?= $Page->fk_id_message->headerCellClass() ?>"><span id="elh_sent_tbl_fk_id_message" class="sent_tbl_fk_id_message"><?= $Page->fk_id_message->caption() ?></span></th>
 <?php } ?>
     </tr>
     </thead>
@@ -83,22 +77,6 @@ while (!$Page->Recordset->EOF) {
     $Page->renderRow();
 ?>
     <tr <?= $Page->rowAttributes() ?>>
-<?php if ($Page->id_sent->Visible) { // id_sent ?>
-        <td<?= $Page->id_sent->cellAttributes() ?>>
-<span id="el<?= $Page->RowCount ?>_sent_tbl_id_sent" class="el_sent_tbl_id_sent">
-<span<?= $Page->id_sent->viewAttributes() ?>>
-<?= $Page->id_sent->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
-<?php if ($Page->fk_id_message->Visible) { // fk_id_message ?>
-        <td<?= $Page->fk_id_message->cellAttributes() ?>>
-<span id="el<?= $Page->RowCount ?>_sent_tbl_fk_id_message" class="el_sent_tbl_fk_id_message">
-<span<?= $Page->fk_id_message->viewAttributes() ?>>
-<?= $Page->fk_id_message->getViewValue() ?></span>
-</span>
-</td>
-<?php } ?>
 <?php if ($Page->datetime_sent->Visible) { // datetime_sent ?>
         <td<?= $Page->datetime_sent->cellAttributes() ?>>
 <span id="el<?= $Page->RowCount ?>_sent_tbl_datetime_sent" class="el_sent_tbl_datetime_sent">
@@ -107,11 +85,11 @@ while (!$Page->Recordset->EOF) {
 </span>
 </td>
 <?php } ?>
-<?php if ($Page->twiliocode_sent->Visible) { // twiliocode_sent ?>
-        <td<?= $Page->twiliocode_sent->cellAttributes() ?>>
-<span id="el<?= $Page->RowCount ?>_sent_tbl_twiliocode_sent" class="el_sent_tbl_twiliocode_sent">
-<span<?= $Page->twiliocode_sent->viewAttributes() ?>>
-<?= $Page->twiliocode_sent->getViewValue() ?></span>
+<?php if ($Page->fk_id_message->Visible) { // fk_id_message ?>
+        <td<?= $Page->fk_id_message->cellAttributes() ?>>
+<span id="el<?= $Page->RowCount ?>_sent_tbl_fk_id_message" class="el_sent_tbl_fk_id_message">
+<span<?= $Page->fk_id_message->viewAttributes() ?>>
+<?= $Page->fk_id_message->getViewValue() ?></span>
 </span>
 </td>
 <?php } ?>

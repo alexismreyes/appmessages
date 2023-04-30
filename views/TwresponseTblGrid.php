@@ -23,7 +23,6 @@ loadjs.ready(["wrapper", "head"], function () {
 
         // Add fields
         .setFields([
-            ["id_twresponse", [fields.id_twresponse.visible && fields.id_twresponse.required ? ew.Validators.required(fields.id_twresponse.caption) : null], fields.id_twresponse.isInvalid],
             ["date_created_twresponse", [fields.date_created_twresponse.visible && fields.date_created_twresponse.required ? ew.Validators.required(fields.date_created_twresponse.caption) : null], fields.date_created_twresponse.isInvalid],
             ["to_twresponse", [fields.to_twresponse.visible && fields.to_twresponse.required ? ew.Validators.required(fields.to_twresponse.caption) : null], fields.to_twresponse.isInvalid],
             ["from_twresponse", [fields.from_twresponse.visible && fields.from_twresponse.required ? ew.Validators.required(fields.from_twresponse.caption) : null], fields.from_twresponse.isInvalid],
@@ -80,9 +79,6 @@ $Grid->renderListOptions();
 // Render list options (header, left)
 $Grid->ListOptions->render("header", "left");
 ?>
-<?php if ($Grid->id_twresponse->Visible) { // id_twresponse ?>
-        <th data-name="id_twresponse" class="<?= $Grid->id_twresponse->headerCellClass() ?>"><div id="elh_twresponse_tbl_id_twresponse" class="twresponse_tbl_id_twresponse"><?= $Grid->renderFieldHeader($Grid->id_twresponse) ?></div></th>
-<?php } ?>
 <?php if ($Grid->date_created_twresponse->Visible) { // date_created_twresponse ?>
         <th data-name="date_created_twresponse" class="<?= $Grid->date_created_twresponse->headerCellClass() ?>"><div id="elh_twresponse_tbl_date_created_twresponse" class="twresponse_tbl_date_created_twresponse"><?= $Grid->renderFieldHeader($Grid->date_created_twresponse) ?></div></th>
 <?php } ?>
@@ -122,33 +118,6 @@ while ($Grid->RecordCount < $Grid->StopRecord) {
 // Render list options (body, left)
 $Grid->ListOptions->render("body", "left", $Grid->RowCount);
 ?>
-    <?php if ($Grid->id_twresponse->Visible) { // id_twresponse ?>
-        <td data-name="id_twresponse"<?= $Grid->id_twresponse->cellAttributes() ?>>
-<?php if ($Grid->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?= $Grid->RowCount ?>_twresponse_tbl_id_twresponse" class="el_twresponse_tbl_id_twresponse"></span>
-<input type="hidden" data-table="twresponse_tbl" data-field="x_id_twresponse" data-hidden="1" data-old name="o<?= $Grid->RowIndex ?>_id_twresponse" id="o<?= $Grid->RowIndex ?>_id_twresponse" value="<?= HtmlEncode($Grid->id_twresponse->OldValue) ?>">
-<?php } ?>
-<?php if ($Grid->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?= $Grid->RowCount ?>_twresponse_tbl_id_twresponse" class="el_twresponse_tbl_id_twresponse">
-<span<?= $Grid->id_twresponse->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?= HtmlEncode(RemoveHtml($Grid->id_twresponse->getDisplayValue($Grid->id_twresponse->EditValue))) ?>"></span>
-<input type="hidden" data-table="twresponse_tbl" data-field="x_id_twresponse" data-hidden="1" name="x<?= $Grid->RowIndex ?>_id_twresponse" id="x<?= $Grid->RowIndex ?>_id_twresponse" value="<?= HtmlEncode($Grid->id_twresponse->CurrentValue) ?>">
-</span>
-<?php } ?>
-<?php if ($Grid->RowType == ROWTYPE_VIEW) { // View record ?>
-<span id="el<?= $Grid->RowCount ?>_twresponse_tbl_id_twresponse" class="el_twresponse_tbl_id_twresponse">
-<span<?= $Grid->id_twresponse->viewAttributes() ?>>
-<?= $Grid->id_twresponse->getViewValue() ?></span>
-</span>
-<?php if ($Grid->isConfirm()) { ?>
-<input type="hidden" data-table="twresponse_tbl" data-field="x_id_twresponse" data-hidden="1" name="ftwresponse_tblgrid$x<?= $Grid->RowIndex ?>_id_twresponse" id="ftwresponse_tblgrid$x<?= $Grid->RowIndex ?>_id_twresponse" value="<?= HtmlEncode($Grid->id_twresponse->FormValue) ?>">
-<input type="hidden" data-table="twresponse_tbl" data-field="x_id_twresponse" data-hidden="1" data-old name="ftwresponse_tblgrid$o<?= $Grid->RowIndex ?>_id_twresponse" id="ftwresponse_tblgrid$o<?= $Grid->RowIndex ?>_id_twresponse" value="<?= HtmlEncode($Grid->id_twresponse->OldValue) ?>">
-<?php } ?>
-<?php } ?>
-</td>
-    <?php } else { ?>
-            <input type="hidden" data-table="twresponse_tbl" data-field="x_id_twresponse" data-hidden="1" name="x<?= $Grid->RowIndex ?>_id_twresponse" id="x<?= $Grid->RowIndex ?>_id_twresponse" value="<?= HtmlEncode($Grid->id_twresponse->CurrentValue) ?>">
-    <?php } ?>
     <?php if ($Grid->date_created_twresponse->Visible) { // date_created_twresponse ?>
         <td data-name="date_created_twresponse"<?= $Grid->date_created_twresponse->cellAttributes() ?>>
 <?php if ($Grid->RowType == ROWTYPE_ADD) { // Add record ?>

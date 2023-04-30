@@ -638,7 +638,7 @@ class SentTblList extends SentTbl
         $this->id_sent->Visible = false;
         $this->datetime_sent->setVisibility();
         $this->fk_id_message->setVisibility();
-        $this->twiliocode_sent->setVisibility();
+        $this->twiliocode_sent->Visible = false;
 
         // Set lookup cache
         if (!in_array($this->PageID, Config("LOOKUP_CACHE_PAGE_IDS"))) {
@@ -1201,7 +1201,6 @@ class SentTblList extends SentTbl
             $this->CurrentOrderType = Get("ordertype", "");
             $this->updateSort($this->datetime_sent); // datetime_sent
             $this->updateSort($this->fk_id_message); // fk_id_message
-            $this->updateSort($this->twiliocode_sent); // twiliocode_sent
             $this->setStartRecordNumber(1); // Reset start position
         }
 
@@ -1259,6 +1258,12 @@ class SentTblList extends SentTbl
 
         // "view"
         $item = &$this->ListOptions->add("view");
+        $item->CssClass = "text-nowrap";
+        $item->Visible = true;
+        $item->OnLeft = false;
+
+        // "delete"
+        $item = &$this->ListOptions->add("delete");
         $item->CssClass = "text-nowrap";
         $item->Visible = true;
         $item->OnLeft = false;
@@ -1351,6 +1356,22 @@ class SentTblList extends SentTbl
                     $opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-table=\"sent_tbl\" data-caption=\"" . $viewcaption . "\" data-ew-action=\"modal\" data-action=\"view\" data-ajax=\"" . ($this->UseAjaxActions ? "true" : "false") . "\" data-url=\"" . HtmlEncode(GetUrl($this->ViewUrl)) . "\" data-btn=\"null\">" . $Language->phrase("ViewLink") . "</a>";
                 } else {
                     $opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-caption=\"" . $viewcaption . "\" href=\"" . HtmlEncode(GetUrl($this->ViewUrl)) . "\">" . $Language->phrase("ViewLink") . "</a>";
+                }
+            } else {
+                $opt->Body = "";
+            }
+
+            // "delete"
+            $opt = $this->ListOptions["delete"];
+            if (true) {
+                $deleteCaption = $Language->phrase("DeleteLink");
+                $deleteTitle = HtmlTitle($deleteCaption);
+                if ($this->UseAjaxActions) {
+                    $opt->Body = "<a class=\"ew-row-link ew-delete\" data-ew-action=\"inline\" data-action=\"delete\" title=\"" . $deleteTitle . "\" data-caption=\"" . $deleteTitle . "\" data-key= \"" . HtmlEncode($this->getKey(true)) . "\" data-url=\"" . HtmlEncode(GetUrl($this->DeleteUrl)) . "\">" . $deleteCaption . "</a>";
+                } else {
+                    $opt->Body = "<a class=\"ew-row-link ew-delete\"" .
+                        ($this->InlineDelete ? " data-ew-action=\"inline-delete\"" : "") .
+                        " title=\"" . $deleteTitle . "\" data-caption=\"" . $deleteTitle . "\" href=\"" . HtmlEncode(GetUrl($this->DeleteUrl)) . "\">" . $deleteCaption . "</a>";
                 }
             } else {
                 $opt->Body = "";
@@ -1475,7 +1496,6 @@ class SentTblList extends SentTbl
             $item->Visible = $this->UseColumnVisibility;
             $option->add("datetime_sent", $this->createColumnOption("datetime_sent"));
             $option->add("fk_id_message", $this->createColumnOption("fk_id_message"));
-            $option->add("twiliocode_sent", $this->createColumnOption("twiliocode_sent"));
         }
 
         // Set up options default
@@ -1959,10 +1979,6 @@ class SentTblList extends SentTbl
             // fk_id_message
             $this->fk_id_message->HrefValue = "";
             $this->fk_id_message->TooltipValue = "";
-
-            // twiliocode_sent
-            $this->twiliocode_sent->HrefValue = "";
-            $this->twiliocode_sent->TooltipValue = "";
         }
 
         // Call Row Rendered event

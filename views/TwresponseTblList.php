@@ -155,9 +155,6 @@ $Page->renderListOptions();
 // Render list options (header, left)
 $Page->ListOptions->render("header", "left");
 ?>
-<?php if ($Page->id_twresponse->Visible) { // id_twresponse ?>
-        <th data-name="id_twresponse" class="<?= $Page->id_twresponse->headerCellClass() ?>"><div id="elh_twresponse_tbl_id_twresponse" class="twresponse_tbl_id_twresponse"><?= $Page->renderFieldHeader($Page->id_twresponse) ?></div></th>
-<?php } ?>
 <?php if ($Page->date_created_twresponse->Visible) { // date_created_twresponse ?>
         <th data-name="date_created_twresponse" class="<?= $Page->date_created_twresponse->headerCellClass() ?>"><div id="elh_twresponse_tbl_date_created_twresponse" class="twresponse_tbl_date_created_twresponse"><?= $Page->renderFieldHeader($Page->date_created_twresponse) ?></div></th>
 <?php } ?>
@@ -189,14 +186,6 @@ while ($Page->RecordCount < $Page->StopRecord) {
 // Render list options (body, left)
 $Page->ListOptions->render("body", "left", $Page->RowCount);
 ?>
-    <?php if ($Page->id_twresponse->Visible) { // id_twresponse ?>
-        <td data-name="id_twresponse"<?= $Page->id_twresponse->cellAttributes() ?>>
-<span id="el<?= $Page->RowCount ?>_twresponse_tbl_id_twresponse" class="el_twresponse_tbl_id_twresponse">
-<span<?= $Page->id_twresponse->viewAttributes() ?>>
-<?= $Page->id_twresponse->getViewValue() ?></span>
-</span>
-</td>
-    <?php } ?>
     <?php if ($Page->date_created_twresponse->Visible) { // date_created_twresponse ?>
         <td data-name="date_created_twresponse"<?= $Page->date_created_twresponse->cellAttributes() ?>>
 <span id="el<?= $Page->RowCount ?>_twresponse_tbl_date_created_twresponse" class="el_twresponse_tbl_date_created_twresponse">

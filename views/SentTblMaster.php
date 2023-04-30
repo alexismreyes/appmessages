@@ -31,17 +31,6 @@ $sent_tbl = Container("sent_tbl");
 </td>
         </tr>
 <?php } ?>
-<?php if ($sent_tbl->twiliocode_sent->Visible) { // twiliocode_sent ?>
-        <tr id="r_twiliocode_sent"<?= $sent_tbl->twiliocode_sent->rowAttributes() ?>>
-            <td class="<?= $sent_tbl->TableLeftColumnClass ?>"><?= $sent_tbl->twiliocode_sent->caption() ?></td>
-            <td<?= $sent_tbl->twiliocode_sent->cellAttributes() ?>>
-<span id="el_sent_tbl_twiliocode_sent">
-<span<?= $sent_tbl->twiliocode_sent->viewAttributes() ?>>
-<?= $sent_tbl->twiliocode_sent->getViewValue() ?></span>
-</span>
-</td>
-        </tr>
-<?php } ?>
     </tbody>
 </table>
 </div>

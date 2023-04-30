@@ -632,6 +632,15 @@ class SentTblView extends SentTbl
         */
         $options = &$this->OtherOptions;
         $option = $options["action"];
+
+        // Delete
+        $item = &$option->add("delete");
+        $url = GetUrl($this->DeleteUrl);
+        $item->Body = "<a class=\"ew-action ew-delete\"" .
+            ($this->InlineDelete || $this->IsModal ? " data-ew-action=\"inline-delete\"" : "") .
+            " title=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) .
+            "\" href=\"" . HtmlEncode($url) . "\">" . $Language->phrase("ViewPageDeleteLink") . "</a>";
+        $item->Visible = $this->DeleteUrl != "";
         $option = $options["detail"];
         $detailTableLink = "";
         $detailViewTblVar = "";

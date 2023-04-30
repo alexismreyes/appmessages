@@ -547,7 +547,7 @@ class SentTblGrid extends SentTbl
         $this->id_sent->Visible = false;
         $this->datetime_sent->setVisibility();
         $this->fk_id_message->setVisibility();
-        $this->twiliocode_sent->setVisibility();
+        $this->twiliocode_sent->Visible = false;
 
         // Set lookup cache
         if (!in_array($this->PageID, Config("LOOKUP_CACHE_PAGE_IDS"))) {
@@ -625,7 +625,7 @@ class SentTblGrid extends SentTbl
             if ($this->isGridAdd() || $this->isGridEdit()) {
                 $item = $this->ListOptions["griddelete"];
                 if ($item) {
-                    $item->Visible = false;
+                    $item->Visible = true;
                 }
             }
         }
@@ -1039,9 +1039,6 @@ class SentTblGrid extends SentTbl
         if ($CurrentForm->hasValue("x_fk_id_message") && $CurrentForm->hasValue("o_fk_id_message") && $this->fk_id_message->CurrentValue != $this->fk_id_message->DefaultValue) {
             return false;
         }
-        if ($CurrentForm->hasValue("x_twiliocode_sent") && $CurrentForm->hasValue("o_twiliocode_sent") && $this->twiliocode_sent->CurrentValue != $this->twiliocode_sent->DefaultValue) {
-            return false;
-        }
         return true;
     }
 
@@ -1129,7 +1126,6 @@ class SentTblGrid extends SentTbl
     {
         $this->datetime_sent->clearErrorMessage();
         $this->fk_id_message->clearErrorMessage();
-        $this->twiliocode_sent->clearErrorMessage();
     }
 
     // Set up sort parameters
@@ -1207,6 +1203,12 @@ class SentTblGrid extends SentTbl
         $item->Visible = true;
         $item->OnLeft = false;
 
+        // "delete"
+        $item = &$this->ListOptions->add("delete");
+        $item->CssClass = "text-nowrap";
+        $item->Visible = true;
+        $item->OnLeft = false;
+
         // Drop down button for ListOptions
         $this->ListOptions->UseDropDownButton = false;
         $this->ListOptions->DropDownButtonPhrase = $Language->phrase("ButtonListOptions");
@@ -1268,11 +1270,7 @@ class SentTblGrid extends SentTbl
                 $options = &$this->ListOptions;
                 $options->UseButtonGroup = true; // Use button group for grid delete button
                 $opt = $options["griddelete"];
-                if (is_numeric($this->RowIndex) && ($this->RowAction == "" || $this->RowAction == "edit")) { // Do not allow delete existing record
-                    $opt->Body = "&nbsp;";
-                } else {
-                    $opt->Body = "<a class=\"ew-grid-link ew-grid-delete\" title=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" data-ew-action=\"delete-grid-row\" data-rowindex=\"" . $this->RowIndex . "\">" . $Language->phrase("DeleteLink") . "</a>";
-                }
+                $opt->Body = "<a class=\"ew-grid-link ew-grid-delete\" title=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" data-ew-action=\"delete-grid-row\" data-rowindex=\"" . $this->RowIndex . "\">" . $Language->phrase("DeleteLink") . "</a>";
             }
         }
         if ($this->CurrentMode == "view") {
@@ -1284,6 +1282,22 @@ class SentTblGrid extends SentTbl
                     $opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-table=\"sent_tbl\" data-caption=\"" . $viewcaption . "\" data-ew-action=\"modal\" data-action=\"view\" data-ajax=\"" . ($this->UseAjaxActions ? "true" : "false") . "\" data-url=\"" . HtmlEncode(GetUrl($this->ViewUrl)) . "\" data-btn=\"null\">" . $Language->phrase("ViewLink") . "</a>";
                 } else {
                     $opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-caption=\"" . $viewcaption . "\" href=\"" . HtmlEncode(GetUrl($this->ViewUrl)) . "\">" . $Language->phrase("ViewLink") . "</a>";
+                }
+            } else {
+                $opt->Body = "";
+            }
+
+            // "delete"
+            $opt = $this->ListOptions["delete"];
+            if (true) {
+                $deleteCaption = $Language->phrase("DeleteLink");
+                $deleteTitle = HtmlTitle($deleteCaption);
+                if ($this->UseAjaxActions) {
+                    $opt->Body = "<a class=\"ew-row-link ew-delete\" data-ew-action=\"inline\" data-action=\"delete\" title=\"" . $deleteTitle . "\" data-caption=\"" . $deleteTitle . "\" data-key= \"" . HtmlEncode($this->getKey(true)) . "\" data-url=\"" . HtmlEncode(GetUrl($this->DeleteUrl)) . "\">" . $deleteCaption . "</a>";
+                } else {
+                    $opt->Body = "<a class=\"ew-row-link ew-delete\"" .
+                        ($this->InlineDelete ? " data-ew-action=\"inline-delete\"" : "") .
+                        " title=\"" . $deleteTitle . "\" data-caption=\"" . $deleteTitle . "\" href=\"" . HtmlEncode(GetUrl($this->DeleteUrl)) . "\">" . $deleteCaption . "</a>";
                 }
             } else {
                 $opt->Body = "";
@@ -1541,19 +1555,6 @@ class SentTblGrid extends SentTbl
             $this->fk_id_message->setOldValue($CurrentForm->getValue("o_fk_id_message"));
         }
 
-        // Check field name 'twiliocode_sent' first before field var 'x_twiliocode_sent'
-        $val = $CurrentForm->hasValue("twiliocode_sent") ? $CurrentForm->getValue("twiliocode_sent") : $CurrentForm->getValue("x_twiliocode_sent");
-        if (!$this->twiliocode_sent->IsDetailKey) {
-            if (IsApi() && $val === null) {
-                $this->twiliocode_sent->Visible = false; // Disable update for API request
-            } else {
-                $this->twiliocode_sent->setFormValue($val);
-            }
-        }
-        if ($CurrentForm->hasValue("o_twiliocode_sent")) {
-            $this->twiliocode_sent->setOldValue($CurrentForm->getValue("o_twiliocode_sent"));
-        }
-
         // Check field name 'id_sent' first before field var 'x_id_sent'
         $val = $CurrentForm->hasValue("id_sent") ? $CurrentForm->getValue("id_sent") : $CurrentForm->getValue("x_id_sent");
         if (!$this->id_sent->IsDetailKey && !$this->isGridAdd() && !$this->isAdd()) {
@@ -1571,7 +1572,6 @@ class SentTblGrid extends SentTbl
         $this->datetime_sent->CurrentValue = $this->datetime_sent->FormValue;
         $this->datetime_sent->CurrentValue = UnFormatDateTime($this->datetime_sent->CurrentValue, $this->datetime_sent->formatPattern());
         $this->fk_id_message->CurrentValue = $this->fk_id_message->FormValue;
-        $this->twiliocode_sent->CurrentValue = $this->twiliocode_sent->FormValue;
     }
 
     // Load recordset
@@ -1759,10 +1759,6 @@ class SentTblGrid extends SentTbl
             // fk_id_message
             $this->fk_id_message->HrefValue = "";
             $this->fk_id_message->TooltipValue = "";
-
-            // twiliocode_sent
-            $this->twiliocode_sent->HrefValue = "";
-            $this->twiliocode_sent->TooltipValue = "";
         } elseif ($this->RowType == ROWTYPE_ADD) {
             // datetime_sent
             $this->datetime_sent->setupEditAttributes();
@@ -1822,14 +1818,6 @@ class SentTblGrid extends SentTbl
                 $this->fk_id_message->PlaceHolder = RemoveHtml($this->fk_id_message->caption());
             }
 
-            // twiliocode_sent
-            $this->twiliocode_sent->setupEditAttributes();
-            if (!$this->twiliocode_sent->Raw) {
-                $this->twiliocode_sent->CurrentValue = HtmlDecode($this->twiliocode_sent->CurrentValue);
-            }
-            $this->twiliocode_sent->EditValue = HtmlEncode($this->twiliocode_sent->CurrentValue);
-            $this->twiliocode_sent->PlaceHolder = RemoveHtml($this->twiliocode_sent->caption());
-
             // Add refer script
 
             // datetime_sent
@@ -1837,9 +1825,6 @@ class SentTblGrid extends SentTbl
 
             // fk_id_message
             $this->fk_id_message->HrefValue = "";
-
-            // twiliocode_sent
-            $this->twiliocode_sent->HrefValue = "";
         } elseif ($this->RowType == ROWTYPE_EDIT) {
             // datetime_sent
             $this->datetime_sent->setupEditAttributes();
@@ -1899,14 +1884,6 @@ class SentTblGrid extends SentTbl
                 $this->fk_id_message->PlaceHolder = RemoveHtml($this->fk_id_message->caption());
             }
 
-            // twiliocode_sent
-            $this->twiliocode_sent->setupEditAttributes();
-            if (!$this->twiliocode_sent->Raw) {
-                $this->twiliocode_sent->CurrentValue = HtmlDecode($this->twiliocode_sent->CurrentValue);
-            }
-            $this->twiliocode_sent->EditValue = HtmlEncode($this->twiliocode_sent->CurrentValue);
-            $this->twiliocode_sent->PlaceHolder = RemoveHtml($this->twiliocode_sent->caption());
-
             // Edit refer script
 
             // datetime_sent
@@ -1914,9 +1891,6 @@ class SentTblGrid extends SentTbl
 
             // fk_id_message
             $this->fk_id_message->HrefValue = "";
-
-            // twiliocode_sent
-            $this->twiliocode_sent->HrefValue = "";
         }
         if ($this->RowType == ROWTYPE_ADD || $this->RowType == ROWTYPE_EDIT || $this->RowType == ROWTYPE_SEARCH) { // Add/Edit/Search row
             $this->setupFieldTitles();
@@ -1953,11 +1927,6 @@ class SentTblGrid extends SentTbl
         }
         if (!CheckInteger($this->fk_id_message->FormValue)) {
             $this->fk_id_message->addErrorMessage($this->fk_id_message->getErrorMessage(false));
-        }
-        if ($this->twiliocode_sent->Required) {
-            if (!$this->twiliocode_sent->IsDetailKey && EmptyValue($this->twiliocode_sent->FormValue)) {
-                $this->twiliocode_sent->addErrorMessage(str_replace("%s", $this->twiliocode_sent->caption(), $this->twiliocode_sent->RequiredErrorMessage));
-            }
         }
 
         // Return validate result
@@ -2068,9 +2037,6 @@ class SentTblGrid extends SentTbl
         }
         $this->fk_id_message->setDbValueDef($rsnew, $this->fk_id_message->CurrentValue, 0, $this->fk_id_message->ReadOnly);
 
-        // twiliocode_sent
-        $this->twiliocode_sent->setDbValueDef($rsnew, $this->twiliocode_sent->CurrentValue, "", $this->twiliocode_sent->ReadOnly);
-
         // Update current values
         $this->setCurrentValues($rsnew);
 
@@ -2143,9 +2109,6 @@ class SentTblGrid extends SentTbl
 
         // fk_id_message
         $this->fk_id_message->setDbValueDef($rsnew, $this->fk_id_message->CurrentValue, 0, false);
-
-        // twiliocode_sent
-        $this->twiliocode_sent->setDbValueDef($rsnew, $this->twiliocode_sent->CurrentValue, "", false);
 
         // Update current values
         $this->setCurrentValues($rsnew);

@@ -635,7 +635,7 @@ class TwresponseTblList extends TwresponseTbl
 
         // Set up list options
         $this->setupListOptions();
-        $this->id_twresponse->setVisibility();
+        $this->id_twresponse->Visible = false;
         $this->sid_twresponse->Visible = false;
         $this->date_created_twresponse->setVisibility();
         $this->date_updated_twresponse->Visible = false;
@@ -1031,7 +1031,6 @@ class TwresponseTblList extends TwresponseTbl
         // Initialize
         $filterList = "";
         $savedFilterList = "";
-        $filterList = Concat($filterList, $this->id_twresponse->AdvancedSearch->toJson(), ","); // Field id_twresponse
         $filterList = Concat($filterList, $this->sid_twresponse->AdvancedSearch->toJson(), ","); // Field sid_twresponse
         $filterList = Concat($filterList, $this->date_created_twresponse->AdvancedSearch->toJson(), ","); // Field date_created_twresponse
         $filterList = Concat($filterList, $this->date_updated_twresponse->AdvancedSearch->toJson(), ","); // Field date_updated_twresponse
@@ -1091,14 +1090,6 @@ class TwresponseTblList extends TwresponseTbl
         }
         $filter = json_decode(Post("filter"), true);
         $this->Command = "search";
-
-        // Field id_twresponse
-        $this->id_twresponse->AdvancedSearch->SearchValue = @$filter["x_id_twresponse"];
-        $this->id_twresponse->AdvancedSearch->SearchOperator = @$filter["z_id_twresponse"];
-        $this->id_twresponse->AdvancedSearch->SearchCondition = @$filter["v_id_twresponse"];
-        $this->id_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_id_twresponse"];
-        $this->id_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_id_twresponse"];
-        $this->id_twresponse->AdvancedSearch->save();
 
         // Field sid_twresponse
         $this->sid_twresponse->AdvancedSearch->SearchValue = @$filter["x_sid_twresponse"];
@@ -1392,7 +1383,6 @@ class TwresponseTblList extends TwresponseTbl
         if (Get("order") !== null) {
             $this->CurrentOrder = Get("order");
             $this->CurrentOrderType = Get("ordertype", "");
-            $this->updateSort($this->id_twresponse); // id_twresponse
             $this->updateSort($this->date_created_twresponse); // date_created_twresponse
             $this->updateSort($this->to_twresponse); // to_twresponse
             $this->updateSort($this->from_twresponse); // from_twresponse
@@ -1610,7 +1600,6 @@ class TwresponseTblList extends TwresponseTbl
             $item = &$option->addGroupOption();
             $item->Body = "";
             $item->Visible = $this->UseColumnVisibility;
-            $option->add("id_twresponse", $this->createColumnOption("id_twresponse"));
             $option->add("date_created_twresponse", $this->createColumnOption("date_created_twresponse"));
             $option->add("to_twresponse", $this->createColumnOption("to_twresponse"));
             $option->add("from_twresponse", $this->createColumnOption("from_twresponse"));
@@ -2128,10 +2117,6 @@ class TwresponseTblList extends TwresponseTbl
 
         // View row
         if ($this->RowType == ROWTYPE_VIEW) {
-            // id_twresponse
-            $this->id_twresponse->ViewValue = $this->id_twresponse->CurrentValue;
-            $this->id_twresponse->ViewValue = FormatNumber($this->id_twresponse->ViewValue, $this->id_twresponse->formatPattern());
-
             // sid_twresponse
             $this->sid_twresponse->ViewValue = $this->sid_twresponse->CurrentValue;
 
@@ -2189,10 +2174,6 @@ class TwresponseTblList extends TwresponseTbl
             // fk_id_sent
             $this->fk_id_sent->ViewValue = $this->fk_id_sent->CurrentValue;
             $this->fk_id_sent->ViewValue = FormatNumber($this->fk_id_sent->ViewValue, $this->fk_id_sent->formatPattern());
-
-            // id_twresponse
-            $this->id_twresponse->HrefValue = "";
-            $this->id_twresponse->TooltipValue = "";
 
             // date_created_twresponse
             $this->date_created_twresponse->HrefValue = "";

@@ -130,6 +130,7 @@ class TwresponseTbl extends DbTable
         $this->id_twresponse->IsAutoIncrement = true; // Autoincrement field
         $this->id_twresponse->IsPrimaryKey = true; // Primary key field
         $this->id_twresponse->Nullable = false; // NOT NULL field
+        $this->id_twresponse->Sortable = false; // Allow sort
         $this->id_twresponse->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
         $this->id_twresponse->SearchOperators = ["=", "<>", "IN", "NOT IN", "<", "<=", ">", ">=", "BETWEEN", "NOT BETWEEN"];
         $this->Fields['id_twresponse'] = &$this->id_twresponse;
@@ -1984,7 +1985,6 @@ class TwresponseTbl extends DbTable
                     $doc->exportCaption($this->uri_twresponse);
                     $doc->exportCaption($this->fk_id_sent);
                 } else {
-                    $doc->exportCaption($this->id_twresponse);
                     $doc->exportCaption($this->sid_twresponse);
                     $doc->exportCaption($this->date_created_twresponse);
                     $doc->exportCaption($this->date_updated_twresponse);
@@ -2055,7 +2055,6 @@ class TwresponseTbl extends DbTable
                         $doc->exportField($this->uri_twresponse);
                         $doc->exportField($this->fk_id_sent);
                     } else {
-                        $doc->exportField($this->id_twresponse);
                         $doc->exportField($this->sid_twresponse);
                         $doc->exportField($this->date_created_twresponse);
                         $doc->exportField($this->date_updated_twresponse);
