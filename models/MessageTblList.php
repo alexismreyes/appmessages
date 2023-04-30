@@ -175,7 +175,7 @@ class MessageTblList extends MessageTbl
         $pageUrl = $this->pageUrl(false);
 
         // Initialize URLs
-        $this->AddUrl = "MessageTblAdd";
+        $this->AddUrl = "MessageTblAdd?" . Config("TABLE_SHOW_DETAIL") . "=";
         $this->InlineAddUrl = $pageUrl . "action=add";
         $this->GridAddUrl = $pageUrl . "action=gridadd";
         $this->GridEditUrl = $pageUrl . "action=gridedit";
@@ -635,7 +635,7 @@ class MessageTblList extends MessageTbl
 
         // Set up list options
         $this->setupListOptions();
-        $this->id_message->setVisibility();
+        $this->id_message->Visible = false;
         $this->created_at_message->setVisibility();
         $this->to_message->setVisibility();
         $this->text_message->setVisibility();
@@ -669,6 +669,9 @@ class MessageTblList extends MessageTbl
         foreach ($this->CustomActions as $name => $action) {
             $this->ListActions->add($name, $action);
         }
+
+        // Set up lookup cache
+        $this->setupLookupOptions($this->to_message);
 
         // Update form name to avoid conflict
         if ($this->IsModal) {
@@ -1176,13 +1179,16 @@ class MessageTblList extends MessageTbl
             if ($this->getSessionOrderBy() == "" && $defaultSort != "") {
                 $this->setSessionOrderBy($defaultSort);
             }
+            $defaultSortList = ""; // Set up default sort
+            if ($this->getSessionOrderByList() == "" && $defaultSortList != "") {
+                $this->setSessionOrderByList($defaultSortList);
+            }
         }
 
         // Check for "order" parameter
         if (Get("order") !== null) {
             $this->CurrentOrder = Get("order");
             $this->CurrentOrderType = Get("ordertype", "");
-            $this->updateSort($this->id_message); // id_message
             $this->updateSort($this->created_at_message); // created_at_message
             $this->updateSort($this->to_message); // to_message
             $this->updateSort($this->text_message); // text_message
@@ -1210,6 +1216,7 @@ class MessageTblList extends MessageTbl
             if ($this->Command == "resetsort") {
                 $orderBy = "";
                 $this->setSessionOrderBy($orderBy);
+                $this->setSessionOrderByList($orderBy);
                 $this->id_message->setSort("");
                 $this->created_at_message->setSort("");
                 $this->to_message->setSort("");
@@ -1232,6 +1239,34 @@ class MessageTblList extends MessageTbl
         $item->Body = "";
         $item->OnLeft = false;
         $item->Visible = false;
+
+        // "delete"
+        $item = &$this->ListOptions->add("delete");
+        $item->CssClass = "text-nowrap";
+        $item->Visible = true;
+        $item->OnLeft = false;
+
+        // "detail_sent_tbl"
+        $item = &$this->ListOptions->add("detail_sent_tbl");
+        $item->CssClass = "text-nowrap";
+        $item->Visible = true;
+        $item->OnLeft = false;
+        $item->ShowInButtonGroup = false;
+
+        // Multiple details
+        if ($this->ShowMultipleDetails) {
+            $item = &$this->ListOptions->add("details");
+            $item->CssClass = "text-nowrap";
+            $item->Visible = $this->ShowMultipleDetails && $this->ListOptions->detailVisible();
+            $item->OnLeft = false;
+            $item->ShowInButtonGroup = false;
+            $this->ListOptions->hideDetailItems();
+        }
+
+        // Set up detail pages
+        $pages = new SubPages();
+        $pages->add("sent_tbl");
+        $this->DetailPages = $pages;
 
         // List actions
         $item = &$this->ListOptions->add("listactions");
@@ -1290,7 +1325,22 @@ class MessageTblList extends MessageTbl
         // Call ListOptions_Rendering event
         $this->listOptionsRendering();
         $pageUrl = $this->pageUrl(false);
-        if ($this->CurrentMode == "view") { // Check view mode
+        if ($this->CurrentMode == "view") {
+            // "delete"
+            $opt = $this->ListOptions["delete"];
+            if (true) {
+                $deleteCaption = $Language->phrase("DeleteLink");
+                $deleteTitle = HtmlTitle($deleteCaption);
+                if ($this->UseAjaxActions) {
+                    $opt->Body = "<a class=\"ew-row-link ew-delete\" data-ew-action=\"inline\" data-action=\"delete\" title=\"" . $deleteTitle . "\" data-caption=\"" . $deleteTitle . "\" data-key= \"" . HtmlEncode($this->getKey(true)) . "\" data-url=\"" . HtmlEncode(GetUrl($this->DeleteUrl)) . "\">" . $deleteCaption . "</a>";
+                } else {
+                    $opt->Body = "<a class=\"ew-row-link ew-delete\"" .
+                        ($this->InlineDelete ? " data-ew-action=\"inline-delete\"" : "") .
+                        " title=\"" . $deleteTitle . "\" data-caption=\"" . $deleteTitle . "\" href=\"" . HtmlEncode(GetUrl($this->DeleteUrl)) . "\">" . $deleteCaption . "</a>";
+                }
+            } else {
+                $opt->Body = "";
+            }
         } // End View mode
 
         // Set up list action buttons
@@ -1326,6 +1376,50 @@ class MessageTblList extends MessageTbl
                 $opt->Body = $body;
             }
         }
+        $detailViewTblVar = "";
+        $detailCopyTblVar = "";
+        $detailEditTblVar = "";
+
+        // "detail_sent_tbl"
+        $opt = $this->ListOptions["detail_sent_tbl"];
+        if (true) {
+            $body = $Language->phrase("DetailLink") . $Language->TablePhrase("sent_tbl", "TblCaption");
+            $body = "<a class=\"btn btn-default ew-row-link ew-detail" . ($this->ListOptions->UseDropDownButton ? " dropdown-toggle" : "") . "\" data-action=\"list\" href=\"" . HtmlEncode("SentTblList?" . Config("TABLE_SHOW_MASTER") . "=message_tbl&" . GetForeignKeyUrl("fk_id_message", $this->id_message->CurrentValue) . "") . "\">" . $body . "</a>";
+            $links = "";
+            $detailPage = Container("SentTblGrid");
+            if ($links != "") {
+                $body .= "<button type=\"button\" class=\"dropdown-toggle btn btn-default ew-detail\" data-bs-toggle=\"dropdown\"></button>";
+                $body .= "<ul class=\"dropdown-menu\">" . $links . "</ul>";
+            } else {
+                $body = preg_replace('/\b\s+dropdown-toggle\b/', "", $body);
+            }
+            $body = "<div class=\"btn-group btn-group-sm ew-btn-group\">" . $body . "</div>";
+            $opt->Body = $body;
+            if ($this->ShowMultipleDetails) {
+                $opt->Visible = false;
+            }
+        }
+        if ($this->ShowMultipleDetails) {
+            $body = "<div class=\"btn-group btn-group-sm ew-btn-group\">";
+            $links = "";
+            if ($detailViewTblVar != "") {
+                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-view\" data-action=\"view\" data-caption=\"" . HtmlEncode($Language->phrase("MasterDetailViewLink", true)) . "\" href=\"" . HtmlEncode($this->getViewUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailViewTblVar)) . "\">" . $Language->phrase("MasterDetailViewLink", null) . "</a></li>";
+            }
+            if ($detailEditTblVar != "") {
+                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-edit\" data-action=\"edit\" data-caption=\"" . HtmlEncode($Language->phrase("MasterDetailEditLink", true)) . "\" href=\"" . HtmlEncode($this->getEditUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailEditTblVar)) . "\">" . $Language->phrase("MasterDetailEditLink", null) . "</a></li>";
+            }
+            if ($detailCopyTblVar != "") {
+                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-copy\" data-action=\"add\" data-caption=\"" . HtmlEncode($Language->phrase("MasterDetailCopyLink", true)) . "\" href=\"" . HtmlEncode($this->GetCopyUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailCopyTblVar)) . "\">" . $Language->phrase("MasterDetailCopyLink", null) . "</a></li>";
+            }
+            if ($links != "") {
+                $body .= "<button type=\"button\" class=\"dropdown-toggle btn btn-default ew-master-detail\" title=\"" . HtmlEncode($Language->phrase("MultipleMasterDetails", true)) . "\" data-bs-toggle=\"dropdown\">" . $Language->phrase("MultipleMasterDetails") . "</button>";
+                $body .= "<ul class=\"dropdown-menu ew-dropdown-menu\">" . $links . "</ul>";
+            }
+            $body .= "</div>";
+            // Multiple details
+            $opt = $this->ListOptions["details"];
+            $opt->Body = $body;
+        }
 
         // "checkbox"
         $opt = $this->ListOptions["checkbox"];
@@ -1348,6 +1442,48 @@ class MessageTblList extends MessageTbl
     {
         global $Language, $Security;
         $options = &$this->OtherOptions;
+        $option = $options["addedit"];
+
+        // Add
+        $item = &$option->add("add");
+        $addcaption = HtmlTitle($Language->phrase("AddLink"));
+        if ($this->ModalAdd && !IsMobile()) {
+            $item->Body = "<a class=\"ew-add-edit ew-add\" title=\"" . $addcaption . "\" data-table=\"message_tbl\" data-caption=\"" . $addcaption . "\" data-ew-action=\"modal\" data-action=\"add\" data-ajax=\"" . ($this->UseAjaxActions ? "true" : "false") . "\" data-url=\"" . HtmlEncode(GetUrl($this->AddUrl)) . "\" data-btn=\"AddBtn\">" . $Language->phrase("AddLink") . "</a>";
+        } else {
+            $item->Body = "<a class=\"ew-add-edit ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode(GetUrl($this->AddUrl)) . "\">" . $Language->phrase("AddLink") . "</a>";
+        }
+        $item->Visible = $this->AddUrl != "";
+        $option = $options["detail"];
+        $detailTableLink = "";
+                $item = &$option->add("detailadd_sent_tbl");
+                $url = $this->getAddUrl(Config("TABLE_SHOW_DETAIL") . "=sent_tbl");
+                $detailPage = Container("SentTblGrid");
+                $caption = $Language->phrase("Add") . "&nbsp;" . $this->tableCaption() . "/" . $detailPage->tableCaption();
+                $item->Body = "<a class=\"ew-detail-add-group ew-detail-add\" title=\"" . HtmlTitle($caption) . "\" data-caption=\"" . HtmlTitle($caption) . "\" href=\"" . HtmlEncode(GetUrl($url)) . "\">" . $caption . "</a>";
+                $item->Visible = ($detailPage->DetailAdd);
+                if ($item->Visible) {
+                    if ($detailTableLink != "") {
+                        $detailTableLink .= ",";
+                    }
+                    $detailTableLink .= "sent_tbl";
+                }
+
+        // Add multiple details
+        if ($this->ShowMultipleDetails) {
+            $item = &$option->add("detailsadd");
+            $url = $this->getAddUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailTableLink);
+            $caption = $Language->phrase("AddMasterDetailLink");
+            $item->Body = "<a class=\"ew-detail-add-group ew-detail-add\" title=\"" . HtmlTitle($caption) . "\" data-caption=\"" . HtmlTitle($caption) . "\" href=\"" . HtmlEncode(GetUrl($url)) . "\">" . $caption . "</a>";
+            $item->Visible = $detailTableLink != "";
+            // Hide single master/detail items
+            $ar = explode(",", $detailTableLink);
+            $cnt = count($ar);
+            for ($i = 0; $i < $cnt; $i++) {
+                if ($item = $option["detailadd_" . $ar[$i]]) {
+                    $item->Visible = false;
+                }
+            }
+        }
         $option = $options["action"];
 
         // Show column list for column visibility
@@ -1356,7 +1492,6 @@ class MessageTblList extends MessageTbl
             $item = &$option->addGroupOption();
             $item->Body = "";
             $item->Visible = $this->UseColumnVisibility;
-            $option->add("id_message", $this->createColumnOption("id_message"));
             $option->add("created_at_message", $this->createColumnOption("created_at_message"));
             $option->add("to_message", $this->createColumnOption("to_message"));
             $option->add("text_message", $this->createColumnOption("text_message"));
@@ -1744,6 +1879,11 @@ class MessageTblList extends MessageTbl
         $this->id_message->setDbValue($row['id_message']);
         $this->created_at_message->setDbValue($row['created_at_message']);
         $this->to_message->setDbValue($row['to_message']);
+        if (array_key_exists('EV__to_message', $row)) {
+            $this->to_message->VirtualValue = $row['EV__to_message']; // Set up virtual field value
+        } else {
+            $this->to_message->VirtualValue = ""; // Clear value
+        }
         $this->text_message->setDbValue($row['text_message']);
     }
 
@@ -1805,23 +1945,40 @@ class MessageTblList extends MessageTbl
 
         // View row
         if ($this->RowType == ROWTYPE_VIEW) {
-            // id_message
-            $this->id_message->ViewValue = $this->id_message->CurrentValue;
-            $this->id_message->ViewValue = FormatNumber($this->id_message->ViewValue, $this->id_message->formatPattern());
-
             // created_at_message
             $this->created_at_message->ViewValue = $this->created_at_message->CurrentValue;
             $this->created_at_message->ViewValue = FormatDateTime($this->created_at_message->ViewValue, $this->created_at_message->formatPattern());
 
             // to_message
-            $this->to_message->ViewValue = $this->to_message->CurrentValue;
+            if ($this->to_message->VirtualValue != "") {
+                $this->to_message->ViewValue = $this->to_message->VirtualValue;
+            } else {
+                $this->to_message->ViewValue = $this->to_message->CurrentValue;
+                $curVal = strval($this->to_message->CurrentValue);
+                if ($curVal != "") {
+                    $this->to_message->ViewValue = $this->to_message->lookupCacheOption($curVal);
+                    if ($this->to_message->ViewValue === null) { // Lookup from database
+                        $filterWrk = SearchFilter("[id_contact]", "=", $curVal, DATATYPE_NUMBER, "");
+                        $sqlWrk = $this->to_message->Lookup->getSql(false, $filterWrk, '', $this, true, true);
+                        $conn = Conn();
+                        $config = $conn->getConfiguration();
+                        $config->setResultCacheImpl($this->Cache);
+                        $rswrk = $conn->executeCacheQuery($sqlWrk, [], [], $this->CacheProfile)->fetchAll();
+                        $ari = count($rswrk);
+                        if ($ari > 0) { // Lookup values found
+                            $arwrk = $this->to_message->Lookup->renderViewRow($rswrk[0]);
+                            $this->to_message->ViewValue = $this->to_message->displayValue($arwrk);
+                        } else {
+                            $this->to_message->ViewValue = FormatNumber($this->to_message->CurrentValue, $this->to_message->formatPattern());
+                        }
+                    }
+                } else {
+                    $this->to_message->ViewValue = null;
+                }
+            }
 
             // text_message
             $this->text_message->ViewValue = $this->text_message->CurrentValue;
-
-            // id_message
-            $this->id_message->HrefValue = "";
-            $this->id_message->TooltipValue = "";
 
             // created_at_message
             $this->created_at_message->HrefValue = "";
@@ -1917,6 +2074,8 @@ class MessageTblList extends MessageTbl
 
             // Set up lookup SQL and connection
             switch ($fld->FieldVar) {
+                case "x_to_message":
+                    break;
                 default:
                     $lookupFilter = "";
                     break;

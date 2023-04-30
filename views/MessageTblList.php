@@ -142,9 +142,6 @@ $Page->renderListOptions();
 // Render list options (header, left)
 $Page->ListOptions->render("header", "left");
 ?>
-<?php if ($Page->id_message->Visible) { // id_message ?>
-        <th data-name="id_message" class="<?= $Page->id_message->headerCellClass() ?>"><div id="elh_message_tbl_id_message" class="message_tbl_id_message"><?= $Page->renderFieldHeader($Page->id_message) ?></div></th>
-<?php } ?>
 <?php if ($Page->created_at_message->Visible) { // created_at_message ?>
         <th data-name="created_at_message" class="<?= $Page->created_at_message->headerCellClass() ?>"><div id="elh_message_tbl_created_at_message" class="message_tbl_created_at_message"><?= $Page->renderFieldHeader($Page->created_at_message) ?></div></th>
 <?php } ?>
@@ -173,14 +170,6 @@ while ($Page->RecordCount < $Page->StopRecord) {
 // Render list options (body, left)
 $Page->ListOptions->render("body", "left", $Page->RowCount);
 ?>
-    <?php if ($Page->id_message->Visible) { // id_message ?>
-        <td data-name="id_message"<?= $Page->id_message->cellAttributes() ?>>
-<span id="el<?= $Page->RowCount ?>_message_tbl_id_message" class="el_message_tbl_id_message">
-<span<?= $Page->id_message->viewAttributes() ?>>
-<?= $Page->id_message->getViewValue() ?></span>
-</span>
-</td>
-    <?php } ?>
     <?php if ($Page->created_at_message->Visible) { // created_at_message ?>
         <td data-name="created_at_message"<?= $Page->created_at_message->cellAttributes() ?>>
 <span id="el<?= $Page->RowCount ?>_message_tbl_created_at_message" class="el_message_tbl_created_at_message">

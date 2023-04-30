@@ -142,7 +142,7 @@ $CONFIG = [
 
     // General
     "UNFORMAT_YEAR" => 50, // Unformat year
-    "RANDOM_KEY" => 'vOt1Qbd02GfRs5Fm', // Random key for encryption
+    "RANDOM_KEY" => 'xMJmCTZCNn8lruQc', // Random key for encryption
     "ENCRYPTION_KEY" => '', // Encryption key for data protection
     "PROJECT_STYLESHEET_FILENAME" => "css/appmessage.css", // Project stylesheet file name
     "USE_COMPRESSED_STYLESHEET" => true, // Compressed stylesheet
@@ -1683,3 +1683,4 @@ $CONFIG["PDF_TIME_LIMIT"] = 120; // Time limit
 $CONFIG["PDF_MAX_IMAGE_WIDTH"] = 650; // Make sure image width not larger than page width or "infinite table loop" error
 $CONFIG["PDF_MAX_IMAGE_HEIGHT"] = 900; // Make sure image height not larger than page height or "infinite table loop" error
 $CONFIG["PDF_IMAGE_SCALE_FACTOR"] = 1.53; // Scale factor
+$CaptchaClass = "PhpCaptcha"; // Override default CAPTCHA class

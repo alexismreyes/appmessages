@@ -635,9 +635,9 @@ class SentTblList extends SentTbl
 
         // Set up list options
         $this->setupListOptions();
-        $this->id_sent->setVisibility();
-        $this->fk_id_message->setVisibility();
+        $this->id_sent->Visible = false;
         $this->datetime_sent->setVisibility();
+        $this->fk_id_message->setVisibility();
         $this->twiliocode_sent->setVisibility();
 
         // Set lookup cache
@@ -662,6 +662,9 @@ class SentTblList extends SentTbl
             $this->InlineDelete = true;
         }
 
+        // Set up master detail parameters
+        $this->setupMasterParms();
+
         // Setup other options
         $this->setupOtherOptions();
 
@@ -669,6 +672,9 @@ class SentTblList extends SentTbl
         foreach ($this->CustomActions as $name => $action) {
             $this->ListActions->add($name, $action);
         }
+
+        // Set up lookup cache
+        $this->setupLookupOptions($this->fk_id_message);
 
         // Update form name to avoid conflict
         if ($this->IsModal) {
@@ -797,8 +803,28 @@ class SentTblList extends SentTbl
 
         // Build filter
         $filter = "";
+
+        // Restore master/detail filter from session
+        $this->DbMasterFilter = $this->getMasterFilterFromSession(); // Restore master filter from session
+        $this->DbDetailFilter = $this->getDetailFilterFromSession(); // Restore detail filter from session
         AddFilter($filter, $this->DbDetailFilter);
         AddFilter($filter, $this->SearchWhere);
+
+        // Load master record
+        if ($this->CurrentMode != "add" && $this->DbMasterFilter != "" && $this->getCurrentMasterTable() == "message_tbl") {
+            $masterTbl = Container("message_tbl");
+            $rsmaster = $masterTbl->loadRs($this->DbMasterFilter)->fetchAssociative();
+            $this->MasterRecordExists = $rsmaster !== false;
+            if (!$this->MasterRecordExists) {
+                $this->setFailureMessage($Language->phrase("NoRecord")); // Set no record found
+                $this->terminate("MessageTblList"); // Return to master page
+                return;
+            } else {
+                $masterTbl->loadListRowValues($rsmaster);
+                $masterTbl->RowType = ROWTYPE_MASTER; // Master row
+                $masterTbl->renderListRow();
+            }
+        }
 
         // Set up filter
         if ($this->Command == "json") {
@@ -992,7 +1018,6 @@ class SentTblList extends SentTbl
         $filterList = "";
         $savedFilterList = "";
         $filterList = Concat($filterList, $this->id_sent->AdvancedSearch->toJson(), ","); // Field id_sent
-        $filterList = Concat($filterList, $this->fk_id_message->AdvancedSearch->toJson(), ","); // Field fk_id_message
         $filterList = Concat($filterList, $this->datetime_sent->AdvancedSearch->toJson(), ","); // Field datetime_sent
         $filterList = Concat($filterList, $this->twiliocode_sent->AdvancedSearch->toJson(), ","); // Field twiliocode_sent
         if ($this->BasicSearch->Keyword != "") {
@@ -1042,14 +1067,6 @@ class SentTblList extends SentTbl
         $this->id_sent->AdvancedSearch->SearchValue2 = @$filter["y_id_sent"];
         $this->id_sent->AdvancedSearch->SearchOperator2 = @$filter["w_id_sent"];
         $this->id_sent->AdvancedSearch->save();
-
-        // Field fk_id_message
-        $this->fk_id_message->AdvancedSearch->SearchValue = @$filter["x_fk_id_message"];
-        $this->fk_id_message->AdvancedSearch->SearchOperator = @$filter["z_fk_id_message"];
-        $this->fk_id_message->AdvancedSearch->SearchCondition = @$filter["v_fk_id_message"];
-        $this->fk_id_message->AdvancedSearch->SearchValue2 = @$filter["y_fk_id_message"];
-        $this->fk_id_message->AdvancedSearch->SearchOperator2 = @$filter["w_fk_id_message"];
-        $this->fk_id_message->AdvancedSearch->save();
 
         // Field datetime_sent
         $this->datetime_sent->AdvancedSearch->SearchValue = @$filter["x_datetime_sent"];
@@ -1102,6 +1119,7 @@ class SentTblList extends SentTbl
 
         // Fields to search
         $searchFlds = [];
+        $searchFlds[] = &$this->fk_id_message;
         $searchFlds[] = &$this->twiliocode_sent;
         $searchKeyword = $default ? $this->BasicSearch->KeywordDefault : $this->BasicSearch->Keyword;
         $searchType = $default ? $this->BasicSearch->TypeDefault : $this->BasicSearch->Type;
@@ -1181,9 +1199,8 @@ class SentTblList extends SentTbl
         if (Get("order") !== null) {
             $this->CurrentOrder = Get("order");
             $this->CurrentOrderType = Get("ordertype", "");
-            $this->updateSort($this->id_sent); // id_sent
-            $this->updateSort($this->fk_id_message); // fk_id_message
             $this->updateSort($this->datetime_sent); // datetime_sent
+            $this->updateSort($this->fk_id_message); // fk_id_message
             $this->updateSort($this->twiliocode_sent); // twiliocode_sent
             $this->setStartRecordNumber(1); // Reset start position
         }
@@ -1205,13 +1222,21 @@ class SentTblList extends SentTbl
                 $this->resetSearchParms();
             }
 
+            // Reset master/detail keys
+            if ($this->Command == "resetall") {
+                $this->setCurrentMasterTable(""); // Clear master table
+                $this->DbMasterFilter = "";
+                $this->DbDetailFilter = "";
+                        $this->fk_id_message->setSessionValue("");
+            }
+
             // Reset (clear) sorting order
             if ($this->Command == "resetsort") {
                 $orderBy = "";
                 $this->setSessionOrderBy($orderBy);
                 $this->id_sent->setSort("");
-                $this->fk_id_message->setSort("");
                 $this->datetime_sent->setSort("");
+                $this->fk_id_message->setSort("");
                 $this->twiliocode_sent->setSort("");
             }
 
@@ -1234,24 +1259,6 @@ class SentTblList extends SentTbl
 
         // "view"
         $item = &$this->ListOptions->add("view");
-        $item->CssClass = "text-nowrap";
-        $item->Visible = true;
-        $item->OnLeft = false;
-
-        // "edit"
-        $item = &$this->ListOptions->add("edit");
-        $item->CssClass = "text-nowrap";
-        $item->Visible = true;
-        $item->OnLeft = false;
-
-        // "copy"
-        $item = &$this->ListOptions->add("copy");
-        $item->CssClass = "text-nowrap";
-        $item->Visible = true;
-        $item->OnLeft = false;
-
-        // "delete"
-        $item = &$this->ListOptions->add("delete");
         $item->CssClass = "text-nowrap";
         $item->Visible = true;
         $item->OnLeft = false;
@@ -1326,48 +1333,6 @@ class SentTblList extends SentTbl
             } else {
                 $opt->Body = "";
             }
-
-            // "edit"
-            $opt = $this->ListOptions["edit"];
-            $editcaption = HtmlTitle($Language->phrase("EditLink"));
-            if (true) {
-                if ($this->ModalEdit && !IsMobile()) {
-                    $opt->Body = "<a class=\"ew-row-link ew-edit\" title=\"" . $editcaption . "\" data-table=\"sent_tbl\" data-caption=\"" . $editcaption . "\" data-ew-action=\"modal\" data-action=\"edit\" data-ajax=\"" . ($this->UseAjaxActions ? "true" : "false") . "\" data-url=\"" . HtmlEncode(GetUrl($this->EditUrl)) . "\" data-btn=\"SaveBtn\">" . $Language->phrase("EditLink") . "</a>";
-                } else {
-                    $opt->Body = "<a class=\"ew-row-link ew-edit\" title=\"" . $editcaption . "\" data-caption=\"" . $editcaption . "\" href=\"" . HtmlEncode(GetUrl($this->EditUrl)) . "\">" . $Language->phrase("EditLink") . "</a>";
-                }
-            } else {
-                $opt->Body = "";
-            }
-
-            // "copy"
-            $opt = $this->ListOptions["copy"];
-            $copycaption = HtmlTitle($Language->phrase("CopyLink"));
-            if (true) {
-                if ($this->ModalAdd && !IsMobile()) {
-                    $opt->Body = "<a class=\"ew-row-link ew-copy\" title=\"" . $copycaption . "\" data-table=\"sent_tbl\" data-caption=\"" . $copycaption . "\" data-ew-action=\"modal\" data-action=\"add\" data-ajax=\"" . ($this->UseAjaxActions ? "true" : "false") . "\" data-url=\"" . HtmlEncode(GetUrl($this->CopyUrl)) . "\" data-btn=\"AddBtn\">" . $Language->phrase("CopyLink") . "</a>";
-                } else {
-                    $opt->Body = "<a class=\"ew-row-link ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" href=\"" . HtmlEncode(GetUrl($this->CopyUrl)) . "\">" . $Language->phrase("CopyLink") . "</a>";
-                }
-            } else {
-                $opt->Body = "";
-            }
-
-            // "delete"
-            $opt = $this->ListOptions["delete"];
-            if (true) {
-                $deleteCaption = $Language->phrase("DeleteLink");
-                $deleteTitle = HtmlTitle($deleteCaption);
-                if ($this->UseAjaxActions) {
-                    $opt->Body = "<a class=\"ew-row-link ew-delete\" data-ew-action=\"inline\" data-action=\"delete\" title=\"" . $deleteTitle . "\" data-caption=\"" . $deleteTitle . "\" data-key= \"" . HtmlEncode($this->getKey(true)) . "\" data-url=\"" . HtmlEncode(GetUrl($this->DeleteUrl)) . "\">" . $deleteCaption . "</a>";
-                } else {
-                    $opt->Body = "<a class=\"ew-row-link ew-delete\"" .
-                        ($this->InlineDelete ? " data-ew-action=\"inline-delete\"" : "") .
-                        " title=\"" . $deleteTitle . "\" data-caption=\"" . $deleteTitle . "\" href=\"" . HtmlEncode(GetUrl($this->DeleteUrl)) . "\">" . $deleteCaption . "</a>";
-                }
-            } else {
-                $opt->Body = "";
-            }
         } // End View mode
 
         // Set up list action buttons
@@ -1425,17 +1390,6 @@ class SentTblList extends SentTbl
     {
         global $Language, $Security;
         $options = &$this->OtherOptions;
-        $option = $options["addedit"];
-
-        // Add
-        $item = &$option->add("add");
-        $addcaption = HtmlTitle($Language->phrase("AddLink"));
-        if ($this->ModalAdd && !IsMobile()) {
-            $item->Body = "<a class=\"ew-add-edit ew-add\" title=\"" . $addcaption . "\" data-table=\"sent_tbl\" data-caption=\"" . $addcaption . "\" data-ew-action=\"modal\" data-action=\"add\" data-ajax=\"" . ($this->UseAjaxActions ? "true" : "false") . "\" data-url=\"" . HtmlEncode(GetUrl($this->AddUrl)) . "\" data-btn=\"AddBtn\">" . $Language->phrase("AddLink") . "</a>";
-        } else {
-            $item->Body = "<a class=\"ew-add-edit ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode(GetUrl($this->AddUrl)) . "\">" . $Language->phrase("AddLink") . "</a>";
-        }
-        $item->Visible = $this->AddUrl != "";
         $option = $options["action"];
 
         // Show column list for column visibility
@@ -1444,9 +1398,8 @@ class SentTblList extends SentTbl
             $item = &$option->addGroupOption();
             $item->Body = "";
             $item->Visible = $this->UseColumnVisibility;
-            $option->add("id_sent", $this->createColumnOption("id_sent"));
-            $option->add("fk_id_message", $this->createColumnOption("fk_id_message"));
             $option->add("datetime_sent", $this->createColumnOption("datetime_sent"));
+            $option->add("fk_id_message", $this->createColumnOption("fk_id_message"));
             $option->add("twiliocode_sent", $this->createColumnOption("twiliocode_sent"));
         }
 
@@ -1830,8 +1783,8 @@ class SentTblList extends SentTbl
         // Call Row Selected event
         $this->rowSelected($row);
         $this->id_sent->setDbValue($row['id_sent']);
-        $this->fk_id_message->setDbValue($row['fk_id_message']);
         $this->datetime_sent->setDbValue($row['datetime_sent']);
+        $this->fk_id_message->setDbValue($row['fk_id_message']);
         $this->twiliocode_sent->setDbValue($row['twiliocode_sent']);
     }
 
@@ -1840,8 +1793,8 @@ class SentTblList extends SentTbl
     {
         $row = [];
         $row['id_sent'] = $this->id_sent->DefaultValue;
-        $row['fk_id_message'] = $this->fk_id_message->DefaultValue;
         $row['datetime_sent'] = $this->datetime_sent->DefaultValue;
+        $row['fk_id_message'] = $this->fk_id_message->DefaultValue;
         $row['twiliocode_sent'] = $this->twiliocode_sent->DefaultValue;
         return $row;
     }
@@ -1885,39 +1838,52 @@ class SentTblList extends SentTbl
 
         // id_sent
 
-        // fk_id_message
-
         // datetime_sent
+
+        // fk_id_message
 
         // twiliocode_sent
 
         // View row
         if ($this->RowType == ROWTYPE_VIEW) {
-            // id_sent
-            $this->id_sent->ViewValue = $this->id_sent->CurrentValue;
-
-            // fk_id_message
-            $this->fk_id_message->ViewValue = $this->fk_id_message->CurrentValue;
-            $this->fk_id_message->ViewValue = FormatNumber($this->fk_id_message->ViewValue, $this->fk_id_message->formatPattern());
-
             // datetime_sent
             $this->datetime_sent->ViewValue = $this->datetime_sent->CurrentValue;
             $this->datetime_sent->ViewValue = FormatDateTime($this->datetime_sent->ViewValue, $this->datetime_sent->formatPattern());
 
+            // fk_id_message
+            $this->fk_id_message->ViewValue = $this->fk_id_message->CurrentValue;
+            $curVal = strval($this->fk_id_message->CurrentValue);
+            if ($curVal != "") {
+                $this->fk_id_message->ViewValue = $this->fk_id_message->lookupCacheOption($curVal);
+                if ($this->fk_id_message->ViewValue === null) { // Lookup from database
+                    $filterWrk = SearchFilter("[id_message]", "=", $curVal, DATATYPE_NUMBER, "");
+                    $sqlWrk = $this->fk_id_message->Lookup->getSql(false, $filterWrk, '', $this, true, true);
+                    $conn = Conn();
+                    $config = $conn->getConfiguration();
+                    $config->setResultCacheImpl($this->Cache);
+                    $rswrk = $conn->executeCacheQuery($sqlWrk, [], [], $this->CacheProfile)->fetchAll();
+                    $ari = count($rswrk);
+                    if ($ari > 0) { // Lookup values found
+                        $arwrk = $this->fk_id_message->Lookup->renderViewRow($rswrk[0]);
+                        $this->fk_id_message->ViewValue = $this->fk_id_message->displayValue($arwrk);
+                    } else {
+                        $this->fk_id_message->ViewValue = FormatNumber($this->fk_id_message->CurrentValue, $this->fk_id_message->formatPattern());
+                    }
+                }
+            } else {
+                $this->fk_id_message->ViewValue = null;
+            }
+
             // twiliocode_sent
             $this->twiliocode_sent->ViewValue = $this->twiliocode_sent->CurrentValue;
-
-            // id_sent
-            $this->id_sent->HrefValue = "";
-            $this->id_sent->TooltipValue = "";
-
-            // fk_id_message
-            $this->fk_id_message->HrefValue = "";
-            $this->fk_id_message->TooltipValue = "";
 
             // datetime_sent
             $this->datetime_sent->HrefValue = "";
             $this->datetime_sent->TooltipValue = "";
+
+            // fk_id_message
+            $this->fk_id_message->HrefValue = "";
+            $this->fk_id_message->TooltipValue = "";
 
             // twiliocode_sent
             $this->twiliocode_sent->HrefValue = "";
@@ -1982,6 +1948,85 @@ class SentTblList extends SentTbl
         }
     }
 
+    // Set up master/detail based on QueryString
+    protected function setupMasterParms()
+    {
+        $validMaster = false;
+        $foreignKeys = [];
+        // Get the keys for master table
+        if (($master = Get(Config("TABLE_SHOW_MASTER"), Get(Config("TABLE_MASTER")))) !== null) {
+            $masterTblVar = $master;
+            if ($masterTblVar == "") {
+                $validMaster = true;
+                $this->DbMasterFilter = "";
+                $this->DbDetailFilter = "";
+            }
+            if ($masterTblVar == "message_tbl") {
+                $validMaster = true;
+                $masterTbl = Container("message_tbl");
+                if (($parm = Get("fk_id_message", Get("fk_id_message"))) !== null) {
+                    $masterTbl->id_message->setQueryStringValue($parm);
+                    $this->fk_id_message->QueryStringValue = $masterTbl->id_message->QueryStringValue; // DO NOT change, master/detail key data type can be different
+                    $this->fk_id_message->setSessionValue($this->fk_id_message->QueryStringValue);
+                    $foreignKeys["fk_id_message"] = $this->fk_id_message->QueryStringValue;
+                    if (!is_numeric($masterTbl->id_message->QueryStringValue)) {
+                        $validMaster = false;
+                    }
+                } else {
+                    $validMaster = false;
+                }
+            }
+        } elseif (($master = Post(Config("TABLE_SHOW_MASTER"), Post(Config("TABLE_MASTER")))) !== null) {
+            $masterTblVar = $master;
+            if ($masterTblVar == "") {
+                    $validMaster = true;
+                    $this->DbMasterFilter = "";
+                    $this->DbDetailFilter = "";
+            }
+            if ($masterTblVar == "message_tbl") {
+                $validMaster = true;
+                $masterTbl = Container("message_tbl");
+                if (($parm = Post("fk_id_message", Post("fk_id_message"))) !== null) {
+                    $masterTbl->id_message->setFormValue($parm);
+                    $this->fk_id_message->FormValue = $masterTbl->id_message->FormValue;
+                    $this->fk_id_message->setSessionValue($this->fk_id_message->FormValue);
+                    $foreignKeys["fk_id_message"] = $this->fk_id_message->FormValue;
+                    if (!is_numeric($masterTbl->id_message->FormValue)) {
+                        $validMaster = false;
+                    }
+                } else {
+                    $validMaster = false;
+                }
+            }
+        }
+        if ($validMaster) {
+            // Save current master table
+            $this->setCurrentMasterTable($masterTblVar);
+
+            // Update URL
+            $this->AddUrl = $this->addMasterUrl($this->AddUrl);
+            $this->InlineAddUrl = $this->addMasterUrl($this->InlineAddUrl);
+            $this->GridAddUrl = $this->addMasterUrl($this->GridAddUrl);
+            $this->GridEditUrl = $this->addMasterUrl($this->GridEditUrl);
+            $this->MultiEditUrl = $this->addMasterUrl($this->MultiEditUrl);
+
+            // Reset start record counter (new master key)
+            if (!$this->isAddOrEdit()) {
+                $this->StartRecord = 1;
+                $this->setStartRecordNumber($this->StartRecord);
+            }
+
+            // Clear previous master key from Session
+            if ($masterTblVar != "message_tbl") {
+                if (!array_key_exists("fk_id_message", $foreignKeys)) { // Not current foreign key
+                    $this->fk_id_message->setSessionValue("");
+                }
+            }
+        }
+        $this->DbMasterFilter = $this->getMasterFilterFromSession(); // Get master filter from session
+        $this->DbDetailFilter = $this->getDetailFilterFromSession(); // Get detail filter from session
+    }
+
     // Set up Breadcrumb
     protected function setupBreadcrumb()
     {
@@ -2005,6 +2050,8 @@ class SentTblList extends SentTbl
 
             // Set up lookup SQL and connection
             switch ($fld->FieldVar) {
+                case "x_fk_id_message":
+                    break;
                 default:
                     $lookupFilter = "";
                     break;

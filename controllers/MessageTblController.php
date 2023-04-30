@@ -13,4 +13,16 @@ class MessageTblController extends ControllerBase
     {
         return $this->runPage($request, $response, $args, "MessageTblList");
     }
+
+    // add
+    public function add(Request $request, Response $response, array $args): Response
+    {
+        return $this->runPage($request, $response, $args, "MessageTblAdd");
+    }
+
+    // delete
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        return $this->runPage($request, $response, $args, "MessageTblDelete");
+    }
 }

@@ -42,8 +42,8 @@ class SentTbl extends DbTable
 
     // Fields
     public $id_sent;
-    public $fk_id_message;
     public $datetime_sent;
+    public $fk_id_message;
     public $twiliocode_sent;
 
     // Page ID
@@ -113,9 +113,35 @@ class SentTbl extends DbTable
         $this->id_sent->IsAutoIncrement = true; // Autoincrement field
         $this->id_sent->IsPrimaryKey = true; // Primary key field
         $this->id_sent->Nullable = false; // NOT NULL field
+        $this->id_sent->Sortable = false; // Allow sort
         $this->id_sent->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
         $this->id_sent->SearchOperators = ["=", "<>", "IN", "NOT IN", "<", "<=", ">", ">=", "BETWEEN", "NOT BETWEEN"];
         $this->Fields['id_sent'] = &$this->id_sent;
+
+        // datetime_sent
+        $this->datetime_sent = new DbField(
+            $this, // Table
+            'x_datetime_sent', // Variable name
+            'datetime_sent', // Name
+            '[datetime_sent]', // Expression
+            CastDateFieldForLike("[datetime_sent]", 16, "DB"), // Basic search expression
+            135, // Type
+            8, // Size
+            16, // Date/Time format
+            false, // Is upload field
+            '[datetime_sent]', // Virtual expression
+            false, // Is virtual
+            false, // Force selection
+            false, // Is Virtual search
+            'FORMATTED TEXT', // View Tag
+            'TEXT' // Edit Tag
+        );
+        $this->datetime_sent->InputTextType = "text";
+        $this->datetime_sent->Nullable = false; // NOT NULL field
+        $this->datetime_sent->Required = true; // Required field
+        $this->datetime_sent->DefaultErrorMessage = str_replace("%s", DateFormat(16), $Language->phrase("IncorrectDate"));
+        $this->datetime_sent->SearchOperators = ["=", "<>", "IN", "NOT IN", "<", "<=", ">", ">=", "BETWEEN", "NOT BETWEEN"];
+        $this->Fields['datetime_sent'] = &$this->datetime_sent;
 
         // fk_id_message
         $this->fk_id_message = new DbField(
@@ -136,36 +162,13 @@ class SentTbl extends DbTable
             'TEXT' // Edit Tag
         );
         $this->fk_id_message->InputTextType = "text";
+        $this->fk_id_message->IsForeignKey = true; // Foreign key field
         $this->fk_id_message->Nullable = false; // NOT NULL field
         $this->fk_id_message->Required = true; // Required field
+        $this->fk_id_message->Lookup = new Lookup('fk_id_message', 'message_tbl', false, 'id_message', ["to_message","text_message","",""], '', '', [], [], [], [], [], [], '', '', "CONCAT(CAST([to_message] AS NVARCHAR),'" . ValueSeparator(1, $this->fk_id_message) . "',[text_message])");
         $this->fk_id_message->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
         $this->fk_id_message->SearchOperators = ["=", "<>", "IN", "NOT IN", "<", "<=", ">", ">=", "BETWEEN", "NOT BETWEEN"];
         $this->Fields['fk_id_message'] = &$this->fk_id_message;
-
-        // datetime_sent
-        $this->datetime_sent = new DbField(
-            $this, // Table
-            'x_datetime_sent', // Variable name
-            'datetime_sent', // Name
-            '[datetime_sent]', // Expression
-            CastDateFieldForLike("[datetime_sent]", 0, "DB"), // Basic search expression
-            135, // Type
-            8, // Size
-            0, // Date/Time format
-            false, // Is upload field
-            '[datetime_sent]', // Virtual expression
-            false, // Is virtual
-            false, // Force selection
-            false, // Is Virtual search
-            'FORMATTED TEXT', // View Tag
-            'TEXT' // Edit Tag
-        );
-        $this->datetime_sent->InputTextType = "text";
-        $this->datetime_sent->Nullable = false; // NOT NULL field
-        $this->datetime_sent->Required = true; // Required field
-        $this->datetime_sent->DefaultErrorMessage = str_replace("%s", $GLOBALS["DATE_FORMAT"], $Language->phrase("IncorrectDate"));
-        $this->datetime_sent->SearchOperators = ["=", "<>", "IN", "NOT IN", "<", "<=", ">", ">=", "BETWEEN", "NOT BETWEEN"];
-        $this->Fields['datetime_sent'] = &$this->datetime_sent;
 
         // twiliocode_sent
         $this->twiliocode_sent = new DbField(
@@ -247,6 +250,88 @@ class SentTbl extends DbTable
             }
             $field->setSort($fldSort);
         }
+    }
+
+    // Current master table name
+    public function getCurrentMasterTable()
+    {
+        return Session(PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_MASTER_TABLE"));
+    }
+
+    public function setCurrentMasterTable($v)
+    {
+        $_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_MASTER_TABLE")] = $v;
+    }
+
+    // Get master WHERE clause from session values
+    public function getMasterFilterFromSession()
+    {
+        // Master filter
+        $masterFilter = "";
+        if ($this->getCurrentMasterTable() == "message_tbl") {
+            $masterTable = Container("message_tbl");
+            if ($this->fk_id_message->getSessionValue() != "") {
+                $masterFilter .= "" . GetKeyFilter($masterTable->id_message, $this->fk_id_message->getSessionValue(), $masterTable->id_message->DataType, $masterTable->Dbid);
+            } else {
+                return "";
+            }
+        }
+        return $masterFilter;
+    }
+
+    // Get detail WHERE clause from session values
+    public function getDetailFilterFromSession()
+    {
+        // Detail filter
+        $detailFilter = "";
+        if ($this->getCurrentMasterTable() == "message_tbl") {
+            $masterTable = Container("message_tbl");
+            if ($this->fk_id_message->getSessionValue() != "") {
+                $detailFilter .= "" . GetKeyFilter($this->fk_id_message, $this->fk_id_message->getSessionValue(), $masterTable->id_message->DataType, $this->Dbid);
+            } else {
+                return "";
+            }
+        }
+        return $detailFilter;
+    }
+
+    /**
+     * Get master filter
+     *
+     * @param object $masterTable Master Table
+     * @param array $keys Detail Keys
+     * @return mixed NULL is returned if all keys are empty, Empty string is returned if some keys are empty and is required
+     */
+    public function getMasterFilter($masterTable, $keys)
+    {
+        $validKeys = true;
+        switch ($masterTable->TableVar) {
+            case "message_tbl":
+                $key = $keys["fk_id_message"] ?? "";
+                if (EmptyValue($key)) {
+                    if ($masterTable->id_message->Required) { // Required field and empty value
+                        return ""; // Return empty filter
+                    }
+                    $validKeys = false;
+                } elseif (!$validKeys) { // Already has empty key
+                    return ""; // Return empty filter
+                }
+                if ($validKeys) {
+                    return GetKeyFilter($masterTable->id_message, $keys["fk_id_message"], $this->fk_id_message->DataType, $this->Dbid);
+                }
+                break;
+        }
+        return null; // All null values and no required fields
+    }
+
+    // Get detail filter
+    public function getDetailFilter($masterTable)
+    {
+        switch ($masterTable->TableVar) {
+            case "message_tbl":
+                return GetKeyFilter($this->fk_id_message, $masterTable->id_message->DbValue, $masterTable->id_message->DataType, $masterTable->Dbid);
+        }
+        return "";
     }
 
     // Render X Axis for chart
@@ -662,8 +747,8 @@ class SentTbl extends DbTable
             return;
         }
         $this->id_sent->DbValue = $row['id_sent'];
-        $this->fk_id_message->DbValue = $row['fk_id_message'];
         $this->datetime_sent->DbValue = $row['datetime_sent'];
+        $this->fk_id_message->DbValue = $row['fk_id_message'];
         $this->twiliocode_sent->DbValue = $row['twiliocode_sent'];
     }
 
@@ -859,6 +944,10 @@ class SentTbl extends DbTable
     // Add master url
     public function addMasterUrl($url)
     {
+        if ($this->getCurrentMasterTable() == "message_tbl" && !ContainsString($url, Config("TABLE_SHOW_MASTER") . "=")) {
+            $url .= (ContainsString($url, "?") ? "&" : "?") . Config("TABLE_SHOW_MASTER") . "=" . $this->getCurrentMasterTable();
+            $url .= "&" . GetForeignKeyUrl("fk_id_message", $this->fk_id_message->getSessionValue()); // Use Session Value
+        }
         return $url;
     }
 
@@ -1019,8 +1108,8 @@ class SentTbl extends DbTable
             return;
         }
         $this->id_sent->setDbValue($row['id_sent']);
-        $this->fk_id_message->setDbValue($row['fk_id_message']);
         $this->datetime_sent->setDbValue($row['datetime_sent']);
+        $this->fk_id_message->setDbValue($row['fk_id_message']);
         $this->twiliocode_sent->setDbValue($row['twiliocode_sent']);
     }
 
@@ -1054,22 +1143,42 @@ class SentTbl extends DbTable
 
         // id_sent
 
-        // fk_id_message
-
         // datetime_sent
+
+        // fk_id_message
 
         // twiliocode_sent
 
         // id_sent
         $this->id_sent->ViewValue = $this->id_sent->CurrentValue;
 
-        // fk_id_message
-        $this->fk_id_message->ViewValue = $this->fk_id_message->CurrentValue;
-        $this->fk_id_message->ViewValue = FormatNumber($this->fk_id_message->ViewValue, $this->fk_id_message->formatPattern());
-
         // datetime_sent
         $this->datetime_sent->ViewValue = $this->datetime_sent->CurrentValue;
         $this->datetime_sent->ViewValue = FormatDateTime($this->datetime_sent->ViewValue, $this->datetime_sent->formatPattern());
+
+        // fk_id_message
+        $this->fk_id_message->ViewValue = $this->fk_id_message->CurrentValue;
+        $curVal = strval($this->fk_id_message->CurrentValue);
+        if ($curVal != "") {
+            $this->fk_id_message->ViewValue = $this->fk_id_message->lookupCacheOption($curVal);
+            if ($this->fk_id_message->ViewValue === null) { // Lookup from database
+                $filterWrk = SearchFilter("[id_message]", "=", $curVal, DATATYPE_NUMBER, "");
+                $sqlWrk = $this->fk_id_message->Lookup->getSql(false, $filterWrk, '', $this, true, true);
+                $conn = Conn();
+                $config = $conn->getConfiguration();
+                $config->setResultCacheImpl($this->Cache);
+                $rswrk = $conn->executeCacheQuery($sqlWrk, [], [], $this->CacheProfile)->fetchAll();
+                $ari = count($rswrk);
+                if ($ari > 0) { // Lookup values found
+                    $arwrk = $this->fk_id_message->Lookup->renderViewRow($rswrk[0]);
+                    $this->fk_id_message->ViewValue = $this->fk_id_message->displayValue($arwrk);
+                } else {
+                    $this->fk_id_message->ViewValue = FormatNumber($this->fk_id_message->CurrentValue, $this->fk_id_message->formatPattern());
+                }
+            }
+        } else {
+            $this->fk_id_message->ViewValue = null;
+        }
 
         // twiliocode_sent
         $this->twiliocode_sent->ViewValue = $this->twiliocode_sent->CurrentValue;
@@ -1078,13 +1187,13 @@ class SentTbl extends DbTable
         $this->id_sent->HrefValue = "";
         $this->id_sent->TooltipValue = "";
 
-        // fk_id_message
-        $this->fk_id_message->HrefValue = "";
-        $this->fk_id_message->TooltipValue = "";
-
         // datetime_sent
         $this->datetime_sent->HrefValue = "";
         $this->datetime_sent->TooltipValue = "";
+
+        // fk_id_message
+        $this->fk_id_message->HrefValue = "";
+        $this->fk_id_message->TooltipValue = "";
 
         // twiliocode_sent
         $this->twiliocode_sent->HrefValue = "";
@@ -1109,18 +1218,41 @@ class SentTbl extends DbTable
         $this->id_sent->setupEditAttributes();
         $this->id_sent->EditValue = $this->id_sent->CurrentValue;
 
-        // fk_id_message
-        $this->fk_id_message->setupEditAttributes();
-        $this->fk_id_message->EditValue = $this->fk_id_message->CurrentValue;
-        $this->fk_id_message->PlaceHolder = RemoveHtml($this->fk_id_message->caption());
-        if (strval($this->fk_id_message->EditValue) != "" && is_numeric($this->fk_id_message->EditValue)) {
-            $this->fk_id_message->EditValue = FormatNumber($this->fk_id_message->EditValue, null);
-        }
-
         // datetime_sent
         $this->datetime_sent->setupEditAttributes();
         $this->datetime_sent->EditValue = FormatDateTime($this->datetime_sent->CurrentValue, $this->datetime_sent->formatPattern());
         $this->datetime_sent->PlaceHolder = RemoveHtml($this->datetime_sent->caption());
+
+        // fk_id_message
+        $this->fk_id_message->setupEditAttributes();
+        if ($this->fk_id_message->getSessionValue() != "") {
+            $this->fk_id_message->CurrentValue = GetForeignKeyValue($this->fk_id_message->getSessionValue());
+            $this->fk_id_message->ViewValue = $this->fk_id_message->CurrentValue;
+            $curVal = strval($this->fk_id_message->CurrentValue);
+            if ($curVal != "") {
+                $this->fk_id_message->ViewValue = $this->fk_id_message->lookupCacheOption($curVal);
+                if ($this->fk_id_message->ViewValue === null) { // Lookup from database
+                    $filterWrk = SearchFilter("[id_message]", "=", $curVal, DATATYPE_NUMBER, "");
+                    $sqlWrk = $this->fk_id_message->Lookup->getSql(false, $filterWrk, '', $this, true, true);
+                    $conn = Conn();
+                    $config = $conn->getConfiguration();
+                    $config->setResultCacheImpl($this->Cache);
+                    $rswrk = $conn->executeCacheQuery($sqlWrk, [], [], $this->CacheProfile)->fetchAll();
+                    $ari = count($rswrk);
+                    if ($ari > 0) { // Lookup values found
+                        $arwrk = $this->fk_id_message->Lookup->renderViewRow($rswrk[0]);
+                        $this->fk_id_message->ViewValue = $this->fk_id_message->displayValue($arwrk);
+                    } else {
+                        $this->fk_id_message->ViewValue = FormatNumber($this->fk_id_message->CurrentValue, $this->fk_id_message->formatPattern());
+                    }
+                }
+            } else {
+                $this->fk_id_message->ViewValue = null;
+            }
+        } else {
+            $this->fk_id_message->EditValue = $this->fk_id_message->CurrentValue;
+            $this->fk_id_message->PlaceHolder = RemoveHtml($this->fk_id_message->caption());
+        }
 
         // twiliocode_sent
         $this->twiliocode_sent->setupEditAttributes();
@@ -1158,14 +1290,12 @@ class SentTbl extends DbTable
             if ($doc->Horizontal) { // Horizontal format, write header
                 $doc->beginExportRow();
                 if ($exportPageType == "view") {
-                    $doc->exportCaption($this->id_sent);
-                    $doc->exportCaption($this->fk_id_message);
                     $doc->exportCaption($this->datetime_sent);
+                    $doc->exportCaption($this->fk_id_message);
                     $doc->exportCaption($this->twiliocode_sent);
                 } else {
-                    $doc->exportCaption($this->id_sent);
-                    $doc->exportCaption($this->fk_id_message);
                     $doc->exportCaption($this->datetime_sent);
+                    $doc->exportCaption($this->fk_id_message);
                     $doc->exportCaption($this->twiliocode_sent);
                 }
                 $doc->endExportRow();
@@ -1196,14 +1326,12 @@ class SentTbl extends DbTable
                 if (!$doc->ExportCustom) {
                     $doc->beginExportRow($rowCnt); // Allow CSS styles if enabled
                     if ($exportPageType == "view") {
-                        $doc->exportField($this->id_sent);
-                        $doc->exportField($this->fk_id_message);
                         $doc->exportField($this->datetime_sent);
+                        $doc->exportField($this->fk_id_message);
                         $doc->exportField($this->twiliocode_sent);
                     } else {
-                        $doc->exportField($this->id_sent);
-                        $doc->exportField($this->fk_id_message);
                         $doc->exportField($this->datetime_sent);
+                        $doc->exportField($this->fk_id_message);
                         $doc->exportField($this->twiliocode_sent);
                     }
                     $doc->endExportRow($rowCnt);

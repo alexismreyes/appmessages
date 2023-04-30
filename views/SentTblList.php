@@ -50,6 +50,15 @@ loadjs.ready("head", function () {
 <?php } ?>
 </div>
 <?php } ?>
+<?php if (!$Page->isExport() || Config("EXPORT_MASTER_RECORD") && $Page->isExport("print")) { ?>
+<?php
+if ($Page->DbMasterFilter != "" && $Page->getCurrentMasterTable() == "message_tbl") {
+    if ($Page->MasterRecordExists) {
+        include_once "views/MessageTblMaster.php";
+    }
+}
+?>
+<?php } ?>
 <?php if (!$Page->IsModal) { ?>
 <form name="fsent_tblsrch" id="fsent_tblsrch" class="ew-form ew-ext-search-form" action="<?= CurrentPageUrl(false) ?>" novalidate autocomplete="on">
 <div id="fsent_tblsrch_search_panel" class="mb-2 mb-sm-0 <?= $Page->SearchPanelClass ?>"><!-- .ew-search-panel -->
@@ -127,6 +136,10 @@ $Page->showMessage();
 <?php if ($Page->IsModal) { ?>
 <input type="hidden" name="modal" value="1">
 <?php } ?>
+<?php if ($Page->getCurrentMasterTable() == "message_tbl" && $Page->CurrentAction) { ?>
+<input type="hidden" name="<?= Config("TABLE_SHOW_MASTER") ?>" value="message_tbl">
+<input type="hidden" name="fk_id_message" value="<?= HtmlEncode($Page->fk_id_message->getSessionValue()) ?>">
+<?php } ?>
 <div id="gmp_sent_tbl" class="card-body ew-grid-middle-panel <?= $Page->TableContainerClass ?>" style="<?= $Page->TableContainerStyle ?>">
 <?php if ($Page->TotalRecords > 0 || $Page->isGridEdit() || $Page->isMultiEdit()) { ?>
 <table id="tbl_sent_tbllist" class="<?= $Page->TableClass ?>"><!-- .ew-table -->
@@ -142,14 +155,11 @@ $Page->renderListOptions();
 // Render list options (header, left)
 $Page->ListOptions->render("header", "left");
 ?>
-<?php if ($Page->id_sent->Visible) { // id_sent ?>
-        <th data-name="id_sent" class="<?= $Page->id_sent->headerCellClass() ?>"><div id="elh_sent_tbl_id_sent" class="sent_tbl_id_sent"><?= $Page->renderFieldHeader($Page->id_sent) ?></div></th>
+<?php if ($Page->datetime_sent->Visible) { // datetime_sent ?>
+        <th data-name="datetime_sent" class="<?= $Page->datetime_sent->headerCellClass() ?>"><div id="elh_sent_tbl_datetime_sent" class="sent_tbl_datetime_sent"><?= $Page->renderFieldHeader($Page->datetime_sent) ?></div></th>
 <?php } ?>
 <?php if ($Page->fk_id_message->Visible) { // fk_id_message ?>
         <th data-name="fk_id_message" class="<?= $Page->fk_id_message->headerCellClass() ?>"><div id="elh_sent_tbl_fk_id_message" class="sent_tbl_fk_id_message"><?= $Page->renderFieldHeader($Page->fk_id_message) ?></div></th>
-<?php } ?>
-<?php if ($Page->datetime_sent->Visible) { // datetime_sent ?>
-        <th data-name="datetime_sent" class="<?= $Page->datetime_sent->headerCellClass() ?>"><div id="elh_sent_tbl_datetime_sent" class="sent_tbl_datetime_sent"><?= $Page->renderFieldHeader($Page->datetime_sent) ?></div></th>
 <?php } ?>
 <?php if ($Page->twiliocode_sent->Visible) { // twiliocode_sent ?>
         <th data-name="twiliocode_sent" class="<?= $Page->twiliocode_sent->headerCellClass() ?>"><div id="elh_sent_tbl_twiliocode_sent" class="sent_tbl_twiliocode_sent"><?= $Page->renderFieldHeader($Page->twiliocode_sent) ?></div></th>
@@ -173,11 +183,11 @@ while ($Page->RecordCount < $Page->StopRecord) {
 // Render list options (body, left)
 $Page->ListOptions->render("body", "left", $Page->RowCount);
 ?>
-    <?php if ($Page->id_sent->Visible) { // id_sent ?>
-        <td data-name="id_sent"<?= $Page->id_sent->cellAttributes() ?>>
-<span id="el<?= $Page->RowCount ?>_sent_tbl_id_sent" class="el_sent_tbl_id_sent">
-<span<?= $Page->id_sent->viewAttributes() ?>>
-<?= $Page->id_sent->getViewValue() ?></span>
+    <?php if ($Page->datetime_sent->Visible) { // datetime_sent ?>
+        <td data-name="datetime_sent"<?= $Page->datetime_sent->cellAttributes() ?>>
+<span id="el<?= $Page->RowCount ?>_sent_tbl_datetime_sent" class="el_sent_tbl_datetime_sent">
+<span<?= $Page->datetime_sent->viewAttributes() ?>>
+<?= $Page->datetime_sent->getViewValue() ?></span>
 </span>
 </td>
     <?php } ?>
@@ -186,14 +196,6 @@ $Page->ListOptions->render("body", "left", $Page->RowCount);
 <span id="el<?= $Page->RowCount ?>_sent_tbl_fk_id_message" class="el_sent_tbl_fk_id_message">
 <span<?= $Page->fk_id_message->viewAttributes() ?>>
 <?= $Page->fk_id_message->getViewValue() ?></span>
-</span>
-</td>
-    <?php } ?>
-    <?php if ($Page->datetime_sent->Visible) { // datetime_sent ?>
-        <td data-name="datetime_sent"<?= $Page->datetime_sent->cellAttributes() ?>>
-<span id="el<?= $Page->RowCount ?>_sent_tbl_datetime_sent" class="el_sent_tbl_datetime_sent">
-<span<?= $Page->datetime_sent->viewAttributes() ?>>
-<?= $Page->datetime_sent->getViewValue() ?></span>
 </span>
 </td>
     <?php } ?>

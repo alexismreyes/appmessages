@@ -53,13 +53,13 @@ loadjs.ready(["wrapper", "head"], function () {
 <input type="hidden" name="t" value="sent_tbl">
 <input type="hidden" name="modal" value="<?= (int)$Page->IsModal ?>">
 <table class="<?= $Page->TableClass ?>">
-<?php if ($Page->id_sent->Visible) { // id_sent ?>
-    <tr id="r_id_sent"<?= $Page->id_sent->rowAttributes() ?>>
-        <td class="<?= $Page->TableLeftColumnClass ?>"><span id="elh_sent_tbl_id_sent"><?= $Page->id_sent->caption() ?></span></td>
-        <td data-name="id_sent"<?= $Page->id_sent->cellAttributes() ?>>
-<span id="el_sent_tbl_id_sent">
-<span<?= $Page->id_sent->viewAttributes() ?>>
-<?= $Page->id_sent->getViewValue() ?></span>
+<?php if ($Page->datetime_sent->Visible) { // datetime_sent ?>
+    <tr id="r_datetime_sent"<?= $Page->datetime_sent->rowAttributes() ?>>
+        <td class="<?= $Page->TableLeftColumnClass ?>"><span id="elh_sent_tbl_datetime_sent"><?= $Page->datetime_sent->caption() ?></span></td>
+        <td data-name="datetime_sent"<?= $Page->datetime_sent->cellAttributes() ?>>
+<span id="el_sent_tbl_datetime_sent">
+<span<?= $Page->datetime_sent->viewAttributes() ?>>
+<?= $Page->datetime_sent->getViewValue() ?></span>
 </span>
 </td>
     </tr>
@@ -71,17 +71,6 @@ loadjs.ready(["wrapper", "head"], function () {
 <span id="el_sent_tbl_fk_id_message">
 <span<?= $Page->fk_id_message->viewAttributes() ?>>
 <?= $Page->fk_id_message->getViewValue() ?></span>
-</span>
-</td>
-    </tr>
-<?php } ?>
-<?php if ($Page->datetime_sent->Visible) { // datetime_sent ?>
-    <tr id="r_datetime_sent"<?= $Page->datetime_sent->rowAttributes() ?>>
-        <td class="<?= $Page->TableLeftColumnClass ?>"><span id="elh_sent_tbl_datetime_sent"><?= $Page->datetime_sent->caption() ?></span></td>
-        <td data-name="datetime_sent"<?= $Page->datetime_sent->cellAttributes() ?>>
-<span id="el_sent_tbl_datetime_sent">
-<span<?= $Page->datetime_sent->viewAttributes() ?>>
-<?= $Page->datetime_sent->getViewValue() ?></span>
 </span>
 </td>
     </tr>

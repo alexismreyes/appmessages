@@ -1160,39 +1160,57 @@
     <phrase id="bodytitle" value="CBS Messages App" />
     <phrase id="footertext" value="&amp;copy;2022 e.World Technology Limited. All rights reserved." />
     <menu id="1">
-      <phrase id="menutext" value="message tbl" />
+      <phrase id="menutext" value="Send" />
+    </menu>
+    <menu id="4">
+      <phrase id="menutext" value="SendMessage" />
     </menu>
     <menu id="2">
-      <phrase id="menutext" value="sent tbl" />
+      <phrase id="menutext" value="Sent" />
+    </menu>
+    <menu id="3">
+      <phrase id="menutext" value="Contacts" />
     </menu>
     <table id="message_tbl">
-      <phrase id="tblcaption" value="message tbl" />
+      <phrase id="tblcaption" value="Send" />
       <field id="id_message">
         <phrase id="fldcaption" value="id message" />
       </field>
       <field id="created_at_message">
-        <phrase id="fldcaption" value="created at message" />
+        <phrase id="fldcaption" value="Sent at" />
       </field>
       <field id="to_message">
-        <phrase id="fldcaption" value="to message" />
+        <phrase id="fldcaption" value="To" />
       </field>
       <field id="text_message">
-        <phrase id="fldcaption" value="text message" />
+        <phrase id="fldcaption" value="Message" />
       </field>
     </table>
     <table id="sent_tbl">
-      <phrase id="tblcaption" value="sent tbl" />
+      <phrase id="tblcaption" value="Sent" />
       <field id="id_sent">
         <phrase id="fldcaption" value="id sent" />
       </field>
-      <field id="fk_id_message">
-        <phrase id="fldcaption" value="fk id message" />
-      </field>
       <field id="datetime_sent">
-        <phrase id="fldcaption" value="datetime sent" />
+        <phrase id="fldcaption" value="Enviado en" />
+      </field>
+      <field id="fk_id_message">
+        <phrase id="fldcaption" value="Details" />
       </field>
       <field id="twiliocode_sent">
-        <phrase id="fldcaption" value="twiliocode sent" />
+        <phrase id="fldcaption" value="Twilio Code" />
+      </field>
+    </table>
+    <table id="contact_tbl">
+      <phrase id="tblcaption" value="Contacts" />
+      <field id="id_contact">
+        <phrase id="fldcaption" value="id contact" />
+      </field>
+      <field id="name_contact">
+        <phrase id="fldcaption" value="Name" />
+      </field>
+      <field id="phone_contact">
+        <phrase id="fldcaption" value="Phone" />
       </field>
     </table>
   </project>

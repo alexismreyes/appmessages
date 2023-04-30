@@ -12,6 +12,12 @@ use Slim\Exception\HttpUnauthorizedException;
  */
 class OthersController extends ControllerBase
 {
+    // captcha
+    public function captcha(Request $request, Response $response, array $args): Response
+    {
+        return $this->runPage($request, $response, $args, "Captcha");
+    }
+
     // Swagger
     public function swagger(Request $request, Response $response, array $args): Response
     {

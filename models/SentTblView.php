@@ -489,8 +489,8 @@ class SentTblView extends SentTbl
         $this->View = Get(Config("VIEW"));
         $this->CurrentAction = Param("action"); // Set up current action
         $this->id_sent->setVisibility();
-        $this->fk_id_message->setVisibility();
         $this->datetime_sent->setVisibility();
+        $this->fk_id_message->setVisibility();
         $this->twiliocode_sent->setVisibility();
 
         // Set lookup cache
@@ -515,6 +515,9 @@ class SentTblView extends SentTbl
             $this->InlineDelete = true;
         }
 
+        // Set up lookup cache
+        $this->setupLookupOptions($this->fk_id_message);
+
         // Check modal
         if ($this->IsModal) {
             $SkipHeaderFooter = true;
@@ -524,6 +527,9 @@ class SentTblView extends SentTbl
         $loadCurrentRecord = false;
         $returnUrl = "";
         $matchRecord = false;
+
+        // Set up master/detail parameters
+        $this->setupMasterParms();
         if (($keyValue = Get("id_sent") ?? Route("id_sent")) !== null) {
             $this->id_sent->setQueryStringValue($keyValue);
             $this->RecKey["id_sent"] = $this->id_sent->QueryStringValue;
@@ -624,45 +630,6 @@ class SentTblView extends SentTbl
         $options = &$this->OtherOptions;
         $option = $options["action"];
 
-        // Add
-        $item = &$option->add("add");
-        $addcaption = HtmlTitle($Language->phrase("ViewPageAddLink"));
-        if ($this->IsModal) {
-            $item->Body = "<a class=\"ew-action ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" data-ew-action=\"modal\" data-url=\"" . HtmlEncode(GetUrl($this->AddUrl)) . "\">" . $Language->phrase("ViewPageAddLink") . "</a>";
-        } else {
-            $item->Body = "<a class=\"ew-action ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode(GetUrl($this->AddUrl)) . "\">" . $Language->phrase("ViewPageAddLink") . "</a>";
-        }
-        $item->Visible = $this->AddUrl != "";
-
-        // Edit
-        $item = &$option->add("edit");
-        $editcaption = HtmlTitle($Language->phrase("ViewPageEditLink"));
-        if ($this->IsModal) {
-            $item->Body = "<a class=\"ew-action ew-edit\" title=\"" . $editcaption . "\" data-caption=\"" . $editcaption . "\" data-ew-action=\"modal\" data-url=\"" . HtmlEncode(GetUrl($this->EditUrl)) . "\">" . $Language->phrase("ViewPageEditLink") . "</a>";
-        } else {
-            $item->Body = "<a class=\"ew-action ew-edit\" title=\"" . $editcaption . "\" data-caption=\"" . $editcaption . "\" href=\"" . HtmlEncode(GetUrl($this->EditUrl)) . "\">" . $Language->phrase("ViewPageEditLink") . "</a>";
-        }
-        $item->Visible = $this->EditUrl != "";
-
-        // Copy
-        $item = &$option->add("copy");
-        $copycaption = HtmlTitle($Language->phrase("ViewPageCopyLink"));
-        if ($this->IsModal) {
-            $item->Body = "<a class=\"ew-action ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" data-ew-action=\"modal\" data-url=\"" . HtmlEncode(GetUrl($this->CopyUrl)) . "\" data-btn=\"AddBtn\">" . $Language->phrase("ViewPageCopyLink") . "</a>";
-        } else {
-            $item->Body = "<a class=\"ew-action ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" href=\"" . HtmlEncode(GetUrl($this->CopyUrl)) . "\">" . $Language->phrase("ViewPageCopyLink") . "</a>";
-        }
-        $item->Visible = $this->CopyUrl != "";
-
-        // Delete
-        $item = &$option->add("delete");
-        $url = GetUrl($this->DeleteUrl);
-        $item->Body = "<a class=\"ew-action ew-delete\"" .
-            ($this->InlineDelete || $this->IsModal ? " data-ew-action=\"inline-delete\"" : "") .
-            " title=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("ViewPageDeleteLink")) .
-            "\" href=\"" . HtmlEncode($url) . "\">" . $Language->phrase("ViewPageDeleteLink") . "</a>";
-        $item->Visible = $this->DeleteUrl != "";
-
         // Set up action default
         $option = $options["action"];
         $option->DropDownButtonPhrase = $Language->phrase("ButtonActions");
@@ -721,8 +688,8 @@ class SentTblView extends SentTbl
         // Call Row Selected event
         $this->rowSelected($row);
         $this->id_sent->setDbValue($row['id_sent']);
-        $this->fk_id_message->setDbValue($row['fk_id_message']);
         $this->datetime_sent->setDbValue($row['datetime_sent']);
+        $this->fk_id_message->setDbValue($row['fk_id_message']);
         $this->twiliocode_sent->setDbValue($row['twiliocode_sent']);
     }
 
@@ -731,8 +698,8 @@ class SentTblView extends SentTbl
     {
         $row = [];
         $row['id_sent'] = $this->id_sent->DefaultValue;
-        $row['fk_id_message'] = $this->fk_id_message->DefaultValue;
         $row['datetime_sent'] = $this->datetime_sent->DefaultValue;
+        $row['fk_id_message'] = $this->fk_id_message->DefaultValue;
         $row['twiliocode_sent'] = $this->twiliocode_sent->DefaultValue;
         return $row;
     }
@@ -757,39 +724,52 @@ class SentTblView extends SentTbl
 
         // id_sent
 
-        // fk_id_message
-
         // datetime_sent
+
+        // fk_id_message
 
         // twiliocode_sent
 
         // View row
         if ($this->RowType == ROWTYPE_VIEW) {
-            // id_sent
-            $this->id_sent->ViewValue = $this->id_sent->CurrentValue;
-
-            // fk_id_message
-            $this->fk_id_message->ViewValue = $this->fk_id_message->CurrentValue;
-            $this->fk_id_message->ViewValue = FormatNumber($this->fk_id_message->ViewValue, $this->fk_id_message->formatPattern());
-
             // datetime_sent
             $this->datetime_sent->ViewValue = $this->datetime_sent->CurrentValue;
             $this->datetime_sent->ViewValue = FormatDateTime($this->datetime_sent->ViewValue, $this->datetime_sent->formatPattern());
 
+            // fk_id_message
+            $this->fk_id_message->ViewValue = $this->fk_id_message->CurrentValue;
+            $curVal = strval($this->fk_id_message->CurrentValue);
+            if ($curVal != "") {
+                $this->fk_id_message->ViewValue = $this->fk_id_message->lookupCacheOption($curVal);
+                if ($this->fk_id_message->ViewValue === null) { // Lookup from database
+                    $filterWrk = SearchFilter("[id_message]", "=", $curVal, DATATYPE_NUMBER, "");
+                    $sqlWrk = $this->fk_id_message->Lookup->getSql(false, $filterWrk, '', $this, true, true);
+                    $conn = Conn();
+                    $config = $conn->getConfiguration();
+                    $config->setResultCacheImpl($this->Cache);
+                    $rswrk = $conn->executeCacheQuery($sqlWrk, [], [], $this->CacheProfile)->fetchAll();
+                    $ari = count($rswrk);
+                    if ($ari > 0) { // Lookup values found
+                        $arwrk = $this->fk_id_message->Lookup->renderViewRow($rswrk[0]);
+                        $this->fk_id_message->ViewValue = $this->fk_id_message->displayValue($arwrk);
+                    } else {
+                        $this->fk_id_message->ViewValue = FormatNumber($this->fk_id_message->CurrentValue, $this->fk_id_message->formatPattern());
+                    }
+                }
+            } else {
+                $this->fk_id_message->ViewValue = null;
+            }
+
             // twiliocode_sent
             $this->twiliocode_sent->ViewValue = $this->twiliocode_sent->CurrentValue;
-
-            // id_sent
-            $this->id_sent->HrefValue = "";
-            $this->id_sent->TooltipValue = "";
-
-            // fk_id_message
-            $this->fk_id_message->HrefValue = "";
-            $this->fk_id_message->TooltipValue = "";
 
             // datetime_sent
             $this->datetime_sent->HrefValue = "";
             $this->datetime_sent->TooltipValue = "";
+
+            // fk_id_message
+            $this->fk_id_message->HrefValue = "";
+            $this->fk_id_message->TooltipValue = "";
 
             // twiliocode_sent
             $this->twiliocode_sent->HrefValue = "";
@@ -800,6 +780,79 @@ class SentTblView extends SentTbl
         if ($this->RowType != ROWTYPE_AGGREGATEINIT) {
             $this->rowRendered();
         }
+    }
+
+    // Set up master/detail based on QueryString
+    protected function setupMasterParms()
+    {
+        $validMaster = false;
+        $foreignKeys = [];
+        // Get the keys for master table
+        if (($master = Get(Config("TABLE_SHOW_MASTER"), Get(Config("TABLE_MASTER")))) !== null) {
+            $masterTblVar = $master;
+            if ($masterTblVar == "") {
+                $validMaster = true;
+                $this->DbMasterFilter = "";
+                $this->DbDetailFilter = "";
+            }
+            if ($masterTblVar == "message_tbl") {
+                $validMaster = true;
+                $masterTbl = Container("message_tbl");
+                if (($parm = Get("fk_id_message", Get("fk_id_message"))) !== null) {
+                    $masterTbl->id_message->setQueryStringValue($parm);
+                    $this->fk_id_message->QueryStringValue = $masterTbl->id_message->QueryStringValue; // DO NOT change, master/detail key data type can be different
+                    $this->fk_id_message->setSessionValue($this->fk_id_message->QueryStringValue);
+                    $foreignKeys["fk_id_message"] = $this->fk_id_message->QueryStringValue;
+                    if (!is_numeric($masterTbl->id_message->QueryStringValue)) {
+                        $validMaster = false;
+                    }
+                } else {
+                    $validMaster = false;
+                }
+            }
+        } elseif (($master = Post(Config("TABLE_SHOW_MASTER"), Post(Config("TABLE_MASTER")))) !== null) {
+            $masterTblVar = $master;
+            if ($masterTblVar == "") {
+                    $validMaster = true;
+                    $this->DbMasterFilter = "";
+                    $this->DbDetailFilter = "";
+            }
+            if ($masterTblVar == "message_tbl") {
+                $validMaster = true;
+                $masterTbl = Container("message_tbl");
+                if (($parm = Post("fk_id_message", Post("fk_id_message"))) !== null) {
+                    $masterTbl->id_message->setFormValue($parm);
+                    $this->fk_id_message->FormValue = $masterTbl->id_message->FormValue;
+                    $this->fk_id_message->setSessionValue($this->fk_id_message->FormValue);
+                    $foreignKeys["fk_id_message"] = $this->fk_id_message->FormValue;
+                    if (!is_numeric($masterTbl->id_message->FormValue)) {
+                        $validMaster = false;
+                    }
+                } else {
+                    $validMaster = false;
+                }
+            }
+        }
+        if ($validMaster) {
+            // Save current master table
+            $this->setCurrentMasterTable($masterTblVar);
+            $this->setSessionWhere($this->getDetailFilterFromSession());
+
+            // Reset start record counter (new master key)
+            if (!$this->isAddOrEdit()) {
+                $this->StartRecord = 1;
+                $this->setStartRecordNumber($this->StartRecord);
+            }
+
+            // Clear previous master key from Session
+            if ($masterTblVar != "message_tbl") {
+                if (!array_key_exists("fk_id_message", $foreignKeys)) { // Not current foreign key
+                    $this->fk_id_message->setSessionValue("");
+                }
+            }
+        }
+        $this->DbMasterFilter = $this->getMasterFilterFromSession(); // Get master filter from session
+        $this->DbDetailFilter = $this->getDetailFilterFromSession(); // Get detail filter from session
     }
 
     // Set up Breadcrumb
@@ -826,6 +879,8 @@ class SentTblView extends SentTbl
 
             // Set up lookup SQL and connection
             switch ($fld->FieldVar) {
+                case "x_fk_id_message":
+                    break;
                 default:
                     $lookupFilter = "";
                     break;

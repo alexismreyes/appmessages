@@ -37,4 +37,5 @@ return [
     // Tables
     "message_tbl" => \DI\create(MessageTbl::class),
     "sent_tbl" => \DI\create(SentTbl::class),
+    "contact_tbl" => \DI\create(ContactTbl::class),
 ];

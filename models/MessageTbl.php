@@ -112,6 +112,7 @@ class MessageTbl extends DbTable
         $this->id_message->InputTextType = "text";
         $this->id_message->IsAutoIncrement = true; // Autoincrement field
         $this->id_message->IsPrimaryKey = true; // Primary key field
+        $this->id_message->IsForeignKey = true; // Foreign key field
         $this->id_message->Nullable = false; // NOT NULL field
         $this->id_message->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
         $this->id_message->SearchOperators = ["=", "<>", "IN", "NOT IN", "<", "<=", ">", ">=", "BETWEEN", "NOT BETWEEN"];
@@ -123,10 +124,10 @@ class MessageTbl extends DbTable
             'x_created_at_message', // Variable name
             'created_at_message', // Name
             '[created_at_message]', // Expression
-            CastDateFieldForLike("[created_at_message]", 0, "DB"), // Basic search expression
+            CastDateFieldForLike("[created_at_message]", 16, "DB"), // Basic search expression
             135, // Type
             8, // Size
-            0, // Date/Time format
+            16, // Date/Time format
             false, // Is upload field
             '[created_at_message]', // Virtual expression
             false, // Is virtual
@@ -138,7 +139,7 @@ class MessageTbl extends DbTable
         $this->created_at_message->InputTextType = "text";
         $this->created_at_message->Nullable = false; // NOT NULL field
         $this->created_at_message->Required = true; // Required field
-        $this->created_at_message->DefaultErrorMessage = str_replace("%s", $GLOBALS["DATE_FORMAT"], $Language->phrase("IncorrectDate"));
+        $this->created_at_message->DefaultErrorMessage = str_replace("%s", DateFormat(16), $Language->phrase("IncorrectDate"));
         $this->created_at_message->SearchOperators = ["=", "<>", "IN", "NOT IN", "<", "<=", ">", ">=", "BETWEEN", "NOT BETWEEN"];
         $this->Fields['created_at_message'] = &$this->created_at_message;
 
@@ -148,21 +149,23 @@ class MessageTbl extends DbTable
             'x_to_message', // Variable name
             'to_message', // Name
             '[to_message]', // Expression
-            '[to_message]', // Basic search expression
-            200, // Type
-            50, // Size
+            'CAST([to_message] AS NVARCHAR)', // Basic search expression
+            3, // Type
+            4, // Size
             -1, // Date/Time format
             false, // Is upload field
-            '[to_message]', // Virtual expression
-            false, // Is virtual
+            '[EV__to_message]', // Virtual expression
+            true, // Is virtual
             false, // Force selection
-            false, // Is Virtual search
+            true, // Is Virtual search
             'FORMATTED TEXT', // View Tag
             'TEXT' // Edit Tag
         );
         $this->to_message->InputTextType = "text";
         $this->to_message->Nullable = false; // NOT NULL field
         $this->to_message->Required = true; // Required field
+        $this->to_message->Lookup = new Lookup('to_message', 'contact_tbl', false, 'id_contact', ["name_contact","phone_contact","",""], '', '', [], [], [], [], [], [], '', '', "CONCAT([name_contact],'" . ValueSeparator(1, $this->to_message) . "',[phone_contact])");
+        $this->to_message->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
         $this->to_message->SearchOperators = ["=", "<>", "IN", "NOT IN", "STARTS WITH", "NOT STARTS WITH", "LIKE", "NOT LIKE", "ENDS WITH", "NOT ENDS WITH", "IS EMPTY", "IS NOT EMPTY"];
         $this->Fields['to_message'] = &$this->to_message;
 
@@ -182,7 +185,7 @@ class MessageTbl extends DbTable
             false, // Force selection
             false, // Is Virtual search
             'FORMATTED TEXT', // View Tag
-            'TEXT' // Edit Tag
+            'TEXTAREA' // Edit Tag
         );
         $this->text_message->InputTextType = "text";
         $this->text_message->Nullable = false; // NOT NULL field
@@ -229,13 +232,16 @@ class MessageTbl extends DbTable
             }
             $orderBy = in_array($curSort, ["ASC", "DESC"]) ? $sortField . " " . $curSort : "";
             $this->setSessionOrderBy($orderBy); // Save to Session
+            $sortFieldList = ($fld->VirtualExpression != "") ? $fld->VirtualExpression : $sortField;
+            $orderBy = in_array($curSort, ["ASC", "DESC"]) ? $sortFieldList . " " . $curSort : "";
+            $this->setSessionOrderByList($orderBy); // Save to Session
         }
     }
 
     // Update field sort
     public function updateFieldSort()
     {
-        $orderBy = $this->getSessionOrderBy(); // Get ORDER BY from Session
+        $orderBy = $this->useVirtualFields() ? $this->getSessionOrderByList() : $this->getSessionOrderBy(); // Get ORDER BY from Session
         $flds = GetSortFields($orderBy);
         foreach ($this->Fields as $field) {
             $fldSort = "";
@@ -246,6 +252,43 @@ class MessageTbl extends DbTable
             }
             $field->setSort($fldSort);
         }
+    }
+
+    // Session ORDER BY for List page
+    public function getSessionOrderByList()
+    {
+        return Session(PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST"));
+    }
+
+    public function setSessionOrderByList($v)
+    {
+        $_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_ORDER_BY_LIST")] = $v;
+    }
+
+    // Current detail table name
+    public function getCurrentDetailTable()
+    {
+        return Session(PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_DETAIL_TABLE")) ?? "";
+    }
+
+    public function setCurrentDetailTable($v)
+    {
+        $_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_DETAIL_TABLE")] = $v;
+    }
+
+    // Get detail url
+    public function getDetailUrl()
+    {
+        // Detail url
+        $detailUrl = "";
+        if ($this->getCurrentDetailTable() == "sent_tbl") {
+            $detailUrl = Container("sent_tbl")->getListUrl() . "?" . Config("TABLE_SHOW_MASTER") . "=" . $this->TableVar;
+            $detailUrl .= "&" . GetForeignKeyUrl("fk_id_message", $this->id_message->CurrentValue);
+        }
+        if ($detailUrl == "") {
+            $detailUrl = "MessageTblList";
+        }
+        return $detailUrl;
     }
 
     // Render X Axis for chart
@@ -283,6 +326,25 @@ class MessageTbl extends DbTable
     public function setSqlSelect($v)
     {
         $this->SqlSelect = $v;
+    }
+
+    public function getSqlSelectList() // Select for List page
+    {
+        if ($this->SqlSelectList) {
+            return $this->SqlSelectList;
+        }
+        $from = "(SELECT *, (SELECT TOP 1 CONCAT([name_contact],'" . ValueSeparator(1, $this->to_message) . "',[phone_contact]) FROM [dbo].[contact_tbl] [TMP_LOOKUPTABLE] WHERE [TMP_LOOKUPTABLE].[id_contact] = [message_tbl].[to_message]) AS [EV__to_message] FROM [dbo].[message_tbl])";
+        return $from . " [TMP_TABLE]";
+    }
+
+    public function sqlSelectList() // For backward compatibility
+    {
+        return $this->getSqlSelectList();
+    }
+
+    public function setSqlSelectList($v)
+    {
+        $this->SqlSelectList = $v;
     }
 
     public function getSqlWhere() // Where
@@ -463,9 +525,15 @@ class MessageTbl extends DbTable
         AddFilter($filter, $this->CurrentFilter);
         $filter = $this->applyUserIDFilters($filter);
         $this->recordsetSelecting($filter);
-        $select = $this->getSqlSelect();
-        $from = $this->getSqlFrom();
-        $sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+        if ($this->useVirtualFields()) {
+            $select = "*";
+            $from = $this->getSqlSelectList();
+            $sort = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+        } else {
+            $select = $this->getSqlSelect();
+            $from = $this->getSqlFrom();
+            $sort = $this->UseSessionForListSql ? $this->getSessionOrderBy() : "";
+        }
         $this->Sort = $sort;
         return $this->buildSelectSql(
             $select,
@@ -483,13 +551,40 @@ class MessageTbl extends DbTable
     public function getOrderBy()
     {
         $orderBy = $this->getSqlOrderBy();
-        $sort = $this->getSessionOrderBy();
+        $sort = ($this->useVirtualFields()) ? $this->getSessionOrderByList() : $this->getSessionOrderBy();
         if ($orderBy != "" && $sort != "") {
             $orderBy .= ", " . $sort;
         } elseif ($sort != "") {
             $orderBy = $sort;
         }
         return $orderBy;
+    }
+
+    // Check if virtual fields is used in SQL
+    protected function useVirtualFields()
+    {
+        $where = $this->UseSessionForListSql ? $this->getSessionWhere() : $this->CurrentFilter;
+        $orderBy = $this->UseSessionForListSql ? $this->getSessionOrderByList() : "";
+        if ($where != "") {
+            $where = " " . str_replace(["(", ")"], ["", ""], $where) . " ";
+        }
+        if ($orderBy != "") {
+            $orderBy = " " . str_replace(["(", ")"], ["", ""], $orderBy) . " ";
+        }
+        if ($this->BasicSearch->getKeyword() != "") {
+            return true;
+        }
+        if (
+            $this->to_message->AdvancedSearch->SearchValue != "" ||
+            $this->to_message->AdvancedSearch->SearchValue2 != "" ||
+            ContainsString($where, " " . $this->to_message->VirtualExpression . " ")
+        ) {
+            return true;
+        }
+        if (ContainsString($orderBy, " " . $this->to_message->VirtualExpression . " ")) {
+            return true;
+        }
+        return false;
     }
 
     // Get record count based on filter (for detail record count in master table pages)
@@ -517,7 +612,11 @@ class MessageTbl extends DbTable
         $select = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlSelect() : $this->getQueryBuilder()->select("*");
         $groupBy = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlGroupBy() : "";
         $having = $this->TableType == 'CUSTOMVIEW' ? $this->getSqlHaving() : "";
-        $sql = $this->buildSelectSql($select, $this->getSqlFrom(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+        if ($this->useVirtualFields()) {
+            $sql = $this->buildSelectSql("*", $this->getSqlSelectList(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+        } else {
+            $sql = $this->buildSelectSql($select, $this->getSqlFrom(), $this->getSqlWhere(), $groupBy, $having, "", $filter, "");
+        }
         $cnt = $this->getRecordCount($sql);
         return $cnt;
     }
@@ -594,6 +693,33 @@ class MessageTbl extends DbTable
     // Update
     public function update(&$rs, $where = "", $rsold = null, $curfilter = true)
     {
+        // Cascade Update detail table 'sent_tbl'
+        $cascadeUpdate = false;
+        $rscascade = [];
+        if ($rsold && (isset($rs['id_message']) && $rsold['id_message'] != $rs['id_message'])) { // Update detail field 'fk_id_message'
+            $cascadeUpdate = true;
+            $rscascade['fk_id_message'] = $rs['id_message'];
+        }
+        if ($cascadeUpdate) {
+            $rswrk = Container("sent_tbl")->loadRs("[fk_id_message] = " . QuotedValue($rsold['id_message'], DATATYPE_NUMBER, 'DB'))->fetchAllAssociative();
+            foreach ($rswrk as $rsdtlold) {
+                $rskey = [];
+                $fldname = 'id_sent';
+                $rskey[$fldname] = $rsdtlold[$fldname];
+                $rsdtlnew = array_merge($rsdtlold, $rscascade);
+                // Call Row_Updating event
+                $success = Container("sent_tbl")->rowUpdating($rsdtlold, $rsdtlnew);
+                if ($success) {
+                    $success = Container("sent_tbl")->update($rscascade, $rskey, $rsdtlold);
+                }
+                if (!$success) {
+                    return false;
+                }
+                // Call Row_Updated event
+                Container("sent_tbl")->rowUpdated($rsdtlold, $rsdtlnew);
+            }
+        }
+
         // If no field is updated, execute may return 0. Treat as success
         try {
             $success = $this->updateSql($rs, $where, $curfilter)->execute();
@@ -642,6 +768,30 @@ class MessageTbl extends DbTable
     public function delete(&$rs, $where = "", $curfilter = false)
     {
         $success = true;
+
+        // Cascade delete detail table 'sent_tbl'
+        $dtlrows = Container("sent_tbl")->loadRs("[fk_id_message] = " . QuotedValue($rs['id_message'], DATATYPE_NUMBER, "DB"))->fetchAllAssociative();
+        // Call Row Deleting event
+        foreach ($dtlrows as $dtlrow) {
+            $success = Container("sent_tbl")->rowDeleting($dtlrow);
+            if (!$success) {
+                break;
+            }
+        }
+        if ($success) {
+            foreach ($dtlrows as $dtlrow) {
+                $success = Container("sent_tbl")->delete($dtlrow); // Delete
+                if (!$success) {
+                    break;
+                }
+            }
+        }
+        // Call Row Deleted event
+        if ($success) {
+            foreach ($dtlrows as $dtlrow) {
+                Container("sent_tbl")->rowDeleted($dtlrow);
+            }
+        }
         if ($success) {
             try {
                 $success = $this->deleteSql($rs, $where, $curfilter)->execute();
@@ -820,7 +970,11 @@ class MessageTbl extends DbTable
     // Edit URL
     public function getEditUrl($parm = "")
     {
-        $url = $this->keyUrl("MessageTblEdit", $parm);
+        if ($parm != "") {
+            $url = $this->keyUrl("MessageTblEdit", $parm);
+        } else {
+            $url = $this->keyUrl("MessageTblEdit", Config("TABLE_SHOW_DETAIL") . "=");
+        }
         return $this->addMasterUrl($url);
     }
 
@@ -834,7 +988,11 @@ class MessageTbl extends DbTable
     // Copy URL
     public function getCopyUrl($parm = "")
     {
-        $url = $this->keyUrl("MessageTblAdd", $parm);
+        if ($parm != "") {
+            $url = $this->keyUrl("MessageTblAdd", $parm);
+        } else {
+            $url = $this->keyUrl("MessageTblAdd", Config("TABLE_SHOW_DETAIL") . "=");
+        }
         return $this->addMasterUrl($url);
     }
 
@@ -1068,7 +1226,32 @@ class MessageTbl extends DbTable
         $this->created_at_message->ViewValue = FormatDateTime($this->created_at_message->ViewValue, $this->created_at_message->formatPattern());
 
         // to_message
-        $this->to_message->ViewValue = $this->to_message->CurrentValue;
+        if ($this->to_message->VirtualValue != "") {
+            $this->to_message->ViewValue = $this->to_message->VirtualValue;
+        } else {
+            $this->to_message->ViewValue = $this->to_message->CurrentValue;
+            $curVal = strval($this->to_message->CurrentValue);
+            if ($curVal != "") {
+                $this->to_message->ViewValue = $this->to_message->lookupCacheOption($curVal);
+                if ($this->to_message->ViewValue === null) { // Lookup from database
+                    $filterWrk = SearchFilter("[id_contact]", "=", $curVal, DATATYPE_NUMBER, "");
+                    $sqlWrk = $this->to_message->Lookup->getSql(false, $filterWrk, '', $this, true, true);
+                    $conn = Conn();
+                    $config = $conn->getConfiguration();
+                    $config->setResultCacheImpl($this->Cache);
+                    $rswrk = $conn->executeCacheQuery($sqlWrk, [], [], $this->CacheProfile)->fetchAll();
+                    $ari = count($rswrk);
+                    if ($ari > 0) { // Lookup values found
+                        $arwrk = $this->to_message->Lookup->renderViewRow($rswrk[0]);
+                        $this->to_message->ViewValue = $this->to_message->displayValue($arwrk);
+                    } else {
+                        $this->to_message->ViewValue = FormatNumber($this->to_message->CurrentValue, $this->to_message->formatPattern());
+                    }
+                }
+            } else {
+                $this->to_message->ViewValue = null;
+            }
+        }
 
         // text_message
         $this->text_message->ViewValue = $this->text_message->CurrentValue;
@@ -1116,17 +1299,11 @@ class MessageTbl extends DbTable
 
         // to_message
         $this->to_message->setupEditAttributes();
-        if (!$this->to_message->Raw) {
-            $this->to_message->CurrentValue = HtmlDecode($this->to_message->CurrentValue);
-        }
         $this->to_message->EditValue = $this->to_message->CurrentValue;
         $this->to_message->PlaceHolder = RemoveHtml($this->to_message->caption());
 
         // text_message
         $this->text_message->setupEditAttributes();
-        if (!$this->text_message->Raw) {
-            $this->text_message->CurrentValue = HtmlDecode($this->text_message->CurrentValue);
-        }
         $this->text_message->EditValue = $this->text_message->CurrentValue;
         $this->text_message->PlaceHolder = RemoveHtml($this->text_message->caption());
 
@@ -1163,7 +1340,6 @@ class MessageTbl extends DbTable
                     $doc->exportCaption($this->to_message);
                     $doc->exportCaption($this->text_message);
                 } else {
-                    $doc->exportCaption($this->id_message);
                     $doc->exportCaption($this->created_at_message);
                     $doc->exportCaption($this->to_message);
                     $doc->exportCaption($this->text_message);
@@ -1201,7 +1377,6 @@ class MessageTbl extends DbTable
                         $doc->exportField($this->to_message);
                         $doc->exportField($this->text_message);
                     } else {
-                        $doc->exportField($this->id_message);
                         $doc->exportField($this->created_at_message);
                         $doc->exportField($this->to_message);
                         $doc->exportField($this->text_message);
@@ -1280,13 +1455,27 @@ class MessageTbl extends DbTable
     {
         // Enter your code here
         // To cancel, set return value to false
+        date_default_timezone_set('America/El_Salvador');
+        $date = date('m/d/Y h:i:s a', time());
+        $rsnew['created_at_message']=$date;
         return true;
     }
-
     // Row Inserted event
     public function rowInserted($rsold, &$rsnew)
     {
         //Log("Row Inserted");
+        // Insert record
+    // NOTE: Modify your SQL here, replace the table name, field name and field values
+    date_default_timezone_set('America/El_Salvador');
+    $date = date('m/d/Y h:i:s a', time());
+    $rsnew['created_at_message']=$date;
+    $sent_at=$rsnew['created_at_message'];
+    $id_message=$rsnew['id_message'];
+    $twiliocode="12345";
+
+    //$insert_sent = ExecuteStatement("INSERT INTO sent_tbl (datetime_sent,fk_id_message,twiliocode_sent) VALUES ($sent_at,$id_message,$twiliocode)");
+    $insert_sent = ExecuteStatement("INSERT INTO sent_tbl (datetime_sent,fk_id_message,twiliocode_sent) VALUES ('$sent_at','$id_message','$twiliocode')");
+    header("Location: http://localhost/appmessages/SentTblList");
     }
 
     // Row Updating event
