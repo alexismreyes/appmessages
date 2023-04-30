@@ -40,4 +40,5 @@ return [
     "contact_tbl" => \DI\create(ContactTbl::class),
     "send" => \DI\create(Send::class),
     "twilio_tbl" => \DI\create(TwilioTbl::class),
+    "twresponse_tbl" => \DI\create(TwresponseTbl::class),
 ];

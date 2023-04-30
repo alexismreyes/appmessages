@@ -10,7 +10,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 /**
  * Page class
  */
-class SentTblView extends SentTbl
+class TwresponseTblView extends TwresponseTbl
 {
     use MessagesTrait;
 
@@ -21,7 +21,7 @@ class SentTblView extends SentTbl
     public $ProjectID = PROJECT_ID;
 
     // Page object name
-    public $PageObjName = "SentTblView";
+    public $PageObjName = "TwresponseTblView";
 
     // View file path
     public $View = null;
@@ -33,7 +33,7 @@ class SentTblView extends SentTbl
     public $RenderingView = false;
 
     // CSS class/style
-    public $CurrentPageName = "SentTblView";
+    public $CurrentPageName = "TwresponseTblView";
 
     // Page URLs
     public $AddUrl;
@@ -136,8 +136,8 @@ class SentTblView extends SentTbl
     {
         parent::__construct();
         global $Language, $DashboardReport, $DebugTimer;
-        $this->TableVar = 'sent_tbl';
-        $this->TableName = 'sent_tbl';
+        $this->TableVar = 'twresponse_tbl';
+        $this->TableName = 'twresponse_tbl';
 
         // Table CSS class
         $this->TableClass = "table table-striped table-bordered table-hover table-sm ew-view-table";
@@ -148,19 +148,19 @@ class SentTblView extends SentTbl
         // Language object
         $Language = Container("language");
 
-        // Table object (sent_tbl)
-        if (!isset($GLOBALS["sent_tbl"]) || get_class($GLOBALS["sent_tbl"]) == PROJECT_NAMESPACE . "sent_tbl") {
-            $GLOBALS["sent_tbl"] = &$this;
+        // Table object (twresponse_tbl)
+        if (!isset($GLOBALS["twresponse_tbl"]) || get_class($GLOBALS["twresponse_tbl"]) == PROJECT_NAMESPACE . "twresponse_tbl") {
+            $GLOBALS["twresponse_tbl"] = &$this;
         }
 
         // Set up record key
-        if (($keyValue = Get("id_sent") ?? Route("id_sent")) !== null) {
-            $this->RecKey["id_sent"] = $keyValue;
+        if (($keyValue = Get("id_twresponse") ?? Route("id_twresponse")) !== null) {
+            $this->RecKey["id_twresponse"] = $keyValue;
         }
 
         // Table name (for backward compatibility only)
         if (!defined(PROJECT_NAMESPACE . "TABLE_NAME")) {
-            define(PROJECT_NAMESPACE . "TABLE_NAME", 'sent_tbl');
+            define(PROJECT_NAMESPACE . "TABLE_NAME", 'twresponse_tbl');
         }
 
         // Start timer
@@ -281,7 +281,7 @@ class SentTblView extends SentTbl
                 $pageName = GetPageName($url);
                 if ($pageName != $this->getListUrl()) { // Not List page => View page
                     $result["caption"] = $this->getModalCaption($pageName);
-                    $result["view"] = $pageName == "SentTblView"; // If View page, no primary button
+                    $result["view"] = $pageName == "TwresponseTblView"; // If View page, no primary button
                 } else { // List page
                     // $result["list"] = $this->PageID == "search"; // Refresh List page if current page is Search page
                     $result["error"] = $this->getFailureMessage(); // List page should not be shown as modal => error
@@ -371,7 +371,7 @@ class SentTblView extends SentTbl
     {
         $key = "";
         if (is_array($ar)) {
-            $key .= @$ar['id_sent'];
+            $key .= @$ar['id_twresponse'];
         }
         return $key;
     }
@@ -384,7 +384,7 @@ class SentTblView extends SentTbl
     protected function hideFieldsForAddEdit()
     {
         if ($this->isAdd() || $this->isCopy() || $this->isGridAdd()) {
-            $this->id_sent->Visible = false;
+            $this->id_twresponse->Visible = false;
         }
     }
 
@@ -488,10 +488,27 @@ class SentTblView extends SentTbl
         // View
         $this->View = Get(Config("VIEW"));
         $this->CurrentAction = Param("action"); // Set up current action
-        $this->id_sent->setVisibility();
-        $this->datetime_sent->setVisibility();
-        $this->fk_id_message->setVisibility();
-        $this->twiliocode_sent->setVisibility();
+        $this->id_twresponse->setVisibility();
+        $this->sid_twresponse->setVisibility();
+        $this->date_created_twresponse->setVisibility();
+        $this->date_updated_twresponse->setVisibility();
+        $this->date_sent_twresponse->setVisibility();
+        $this->account_sid_twresponse->setVisibility();
+        $this->to_twresponse->setVisibility();
+        $this->from_twresponse->setVisibility();
+        $this->messaging_service_sid_twresponse->setVisibility();
+        $this->body_twresponse->setVisibility();
+        $this->status_twresponse->setVisibility();
+        $this->num_segments_twresponse->setVisibility();
+        $this->num_media_twresponse->setVisibility();
+        $this->direction_twresponse->setVisibility();
+        $this->api_version_twresponse->setVisibility();
+        $this->price_twresponse->setVisibility();
+        $this->price_unit_twresponse->setVisibility();
+        $this->error_code_twresponse->setVisibility();
+        $this->error_message_twresponse->setVisibility();
+        $this->uri_twresponse->setVisibility();
+        $this->fk_id_sent->setVisibility();
 
         // Set lookup cache
         if (!in_array($this->PageID, Config("LOOKUP_CACHE_PAGE_IDS"))) {
@@ -515,9 +532,6 @@ class SentTblView extends SentTbl
             $this->InlineDelete = true;
         }
 
-        // Set up lookup cache
-        $this->setupLookupOptions($this->fk_id_message);
-
         // Check modal
         if ($this->IsModal) {
             $SkipHeaderFooter = true;
@@ -530,17 +544,17 @@ class SentTblView extends SentTbl
 
         // Set up master/detail parameters
         $this->setupMasterParms();
-        if (($keyValue = Get("id_sent") ?? Route("id_sent")) !== null) {
-            $this->id_sent->setQueryStringValue($keyValue);
-            $this->RecKey["id_sent"] = $this->id_sent->QueryStringValue;
-        } elseif (Post("id_sent") !== null) {
-            $this->id_sent->setFormValue(Post("id_sent"));
-            $this->RecKey["id_sent"] = $this->id_sent->FormValue;
+        if (($keyValue = Get("id_twresponse") ?? Route("id_twresponse")) !== null) {
+            $this->id_twresponse->setQueryStringValue($keyValue);
+            $this->RecKey["id_twresponse"] = $this->id_twresponse->QueryStringValue;
+        } elseif (Post("id_twresponse") !== null) {
+            $this->id_twresponse->setFormValue(Post("id_twresponse"));
+            $this->RecKey["id_twresponse"] = $this->id_twresponse->FormValue;
         } elseif (IsApi() && ($keyValue = Key(0) ?? Route(2)) !== null) {
-            $this->id_sent->setQueryStringValue($keyValue);
-            $this->RecKey["id_sent"] = $this->id_sent->QueryStringValue;
+            $this->id_twresponse->setQueryStringValue($keyValue);
+            $this->RecKey["id_twresponse"] = $this->id_twresponse->QueryStringValue;
         } elseif (!$loadCurrentRecord) {
-            $returnUrl = "SentTblList"; // Return to list
+            $returnUrl = "TwresponseTblList"; // Return to list
         }
 
         // Get action
@@ -563,7 +577,7 @@ class SentTblView extends SentTbl
                         if ($this->getSuccessMessage() == "" && $this->getFailureMessage() == "") {
                             $this->setFailureMessage($Language->phrase("NoRecord")); // Set no record message
                         }
-                        $returnUrl = "SentTblList"; // No matching record, return to list
+                        $returnUrl = "TwresponseTblList"; // No matching record, return to list
                     }
                 break;
         }
@@ -581,9 +595,6 @@ class SentTblView extends SentTbl
         $this->RowType = ROWTYPE_VIEW;
         $this->resetAttributes();
         $this->renderRow();
-
-        // Set up detail parameters
-        $this->setupDetailParms();
 
         // Normal return
         if (IsApi()) {
@@ -632,77 +643,6 @@ class SentTblView extends SentTbl
         */
         $options = &$this->OtherOptions;
         $option = $options["action"];
-        $option = $options["detail"];
-        $detailTableLink = "";
-        $detailViewTblVar = "";
-        $detailCopyTblVar = "";
-        $detailEditTblVar = "";
-
-        // "detail_twresponse_tbl"
-        $item = &$option->add("detail_twresponse_tbl");
-        $body = $Language->phrase("ViewPageDetailLink") . $Language->TablePhrase("twresponse_tbl", "TblCaption");
-        $body = "<a class=\"btn btn-default ew-row-link ew-detail\" data-action=\"list\" href=\"" . HtmlEncode(GetUrl("TwresponseTblList?" . Config("TABLE_SHOW_MASTER") . "=sent_tbl&" . GetForeignKeyUrl("fk_id_sent", $this->id_sent->CurrentValue) . "")) . "\">" . $body . "</a>";
-        $links = "";
-        $detailPageObj = Container("TwresponseTblGrid");
-        if ($detailPageObj->DetailView) {
-            $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-view\" data-action=\"view\" data-caption=\"" . HtmlTitle($Language->phrase("MasterDetailViewLink")) . "\" href=\"" . HtmlEncode(GetUrl($this->getViewUrl(Config("TABLE_SHOW_DETAIL") . "=twresponse_tbl"))) . "\">" . $Language->phrase("MasterDetailViewLink", null) . "</a></li>";
-            if ($detailViewTblVar != "") {
-                $detailViewTblVar .= ",";
-            }
-            $detailViewTblVar .= "twresponse_tbl";
-        }
-        if ($links != "") {
-            $body .= "<button type=\"button\" class=\"dropdown-toggle btn btn-default ew-detail\" data-bs-toggle=\"dropdown\"></button>";
-            $body .= "<ul class=\"dropdown-menu\">" . $links . "</ul>";
-        } else {
-            $body = preg_replace('/\b\s+dropdown-toggle\b/', "", $body);
-        }
-        $body = "<div class=\"btn-group btn-group-sm ew-btn-group\">" . $body . "</div>";
-        $item->Body = $body;
-        $item->Visible = true;
-        if ($item->Visible) {
-            if ($detailTableLink != "") {
-                $detailTableLink .= ",";
-            }
-            $detailTableLink .= "twresponse_tbl";
-        }
-        if ($this->ShowMultipleDetails) {
-            $item->Visible = false;
-        }
-
-        // Multiple details
-        if ($this->ShowMultipleDetails) {
-            $body = "<div class=\"btn-group btn-group-sm ew-btn-group\">";
-            $links = "";
-            if ($detailViewTblVar != "") {
-                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-view\" data-action=\"view\" data-caption=\"" . HtmlEncode($Language->phrase("MasterDetailViewLink", true)) . "\" href=\"" . HtmlEncode(GetUrl($this->getViewUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailViewTblVar))) . "\">" . $Language->phrase("MasterDetailViewLink", null) . "</a></li>";
-            }
-            if ($detailEditTblVar != "") {
-                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-edit\" data-action=\"edit\" data-caption=\"" . HtmlEncode($Language->phrase("MasterDetailEditLink", true)) . "\" href=\"" . HtmlEncode(GetUrl($this->getEditUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailEditTblVar))) . "\">" . $Language->phrase("MasterDetailEditLink", null) . "</a></li>";
-            }
-            if ($detailCopyTblVar != "") {
-                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-copy\" data-action=\"add\" data-caption=\"" . HtmlEncode($Language->phrase("MasterDetailCopyLink", true)) . "\" href=\"" . HtmlEncode(GetUrl($this->getCopyUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailCopyTblVar))) . "\">" . $Language->phrase("MasterDetailCopyLink", null) . "</a></li>";
-            }
-            if ($links != "") {
-                $body .= "<button type=\"button\" class=\"dropdown-toggle btn btn-default ew-master-detail\" title=\"" . HtmlEncode($Language->phrase("MultipleMasterDetails", true)) . "\" data-bs-toggle=\"dropdown\">" . $Language->phrase("MultipleMasterDetails") . "</button>";
-                $body .= "<ul class=\"dropdown-menu ew-dropdown-menu\">" . $links . "</ul>";
-            }
-            $body .= "</div>";
-            // Multiple details
-            $item = &$option->add("details");
-            $item->Body = $body;
-        }
-
-        // Set up detail default
-        $option = $options["detail"];
-        $options["detail"]->DropDownButtonPhrase = $Language->phrase("ButtonDetails");
-        $ar = explode(",", $detailTableLink);
-        $cnt = count($ar);
-        $option->UseDropDownButton = ($cnt > 1);
-        $option->UseButtonGroup = true;
-        $item = &$option->addGroupOption();
-        $item->Body = "";
-        $item->Visible = false;
 
         // Set up action default
         $option = $options["action"];
@@ -761,20 +701,54 @@ class SentTblView extends SentTbl
 
         // Call Row Selected event
         $this->rowSelected($row);
-        $this->id_sent->setDbValue($row['id_sent']);
-        $this->datetime_sent->setDbValue($row['datetime_sent']);
-        $this->fk_id_message->setDbValue($row['fk_id_message']);
-        $this->twiliocode_sent->setDbValue($row['twiliocode_sent']);
+        $this->id_twresponse->setDbValue($row['id_twresponse']);
+        $this->sid_twresponse->setDbValue($row['sid_twresponse']);
+        $this->date_created_twresponse->setDbValue($row['date_created_twresponse']);
+        $this->date_updated_twresponse->setDbValue($row['date_updated_twresponse']);
+        $this->date_sent_twresponse->setDbValue($row['date_sent_twresponse']);
+        $this->account_sid_twresponse->setDbValue($row['account_sid_twresponse']);
+        $this->to_twresponse->setDbValue($row['to_twresponse']);
+        $this->from_twresponse->setDbValue($row['from_twresponse']);
+        $this->messaging_service_sid_twresponse->setDbValue($row['messaging_service_sid_twresponse']);
+        $this->body_twresponse->setDbValue($row['body_twresponse']);
+        $this->status_twresponse->setDbValue($row['status_twresponse']);
+        $this->num_segments_twresponse->setDbValue($row['num_segments_twresponse']);
+        $this->num_media_twresponse->setDbValue($row['num_media_twresponse']);
+        $this->direction_twresponse->setDbValue($row['direction_twresponse']);
+        $this->api_version_twresponse->setDbValue($row['api_version_twresponse']);
+        $this->price_twresponse->setDbValue($row['price_twresponse']);
+        $this->price_unit_twresponse->setDbValue($row['price_unit_twresponse']);
+        $this->error_code_twresponse->setDbValue($row['error_code_twresponse']);
+        $this->error_message_twresponse->setDbValue($row['error_message_twresponse']);
+        $this->uri_twresponse->setDbValue($row['uri_twresponse']);
+        $this->fk_id_sent->setDbValue($row['fk_id_sent']);
     }
 
     // Return a row with default values
     protected function newRow()
     {
         $row = [];
-        $row['id_sent'] = $this->id_sent->DefaultValue;
-        $row['datetime_sent'] = $this->datetime_sent->DefaultValue;
-        $row['fk_id_message'] = $this->fk_id_message->DefaultValue;
-        $row['twiliocode_sent'] = $this->twiliocode_sent->DefaultValue;
+        $row['id_twresponse'] = $this->id_twresponse->DefaultValue;
+        $row['sid_twresponse'] = $this->sid_twresponse->DefaultValue;
+        $row['date_created_twresponse'] = $this->date_created_twresponse->DefaultValue;
+        $row['date_updated_twresponse'] = $this->date_updated_twresponse->DefaultValue;
+        $row['date_sent_twresponse'] = $this->date_sent_twresponse->DefaultValue;
+        $row['account_sid_twresponse'] = $this->account_sid_twresponse->DefaultValue;
+        $row['to_twresponse'] = $this->to_twresponse->DefaultValue;
+        $row['from_twresponse'] = $this->from_twresponse->DefaultValue;
+        $row['messaging_service_sid_twresponse'] = $this->messaging_service_sid_twresponse->DefaultValue;
+        $row['body_twresponse'] = $this->body_twresponse->DefaultValue;
+        $row['status_twresponse'] = $this->status_twresponse->DefaultValue;
+        $row['num_segments_twresponse'] = $this->num_segments_twresponse->DefaultValue;
+        $row['num_media_twresponse'] = $this->num_media_twresponse->DefaultValue;
+        $row['direction_twresponse'] = $this->direction_twresponse->DefaultValue;
+        $row['api_version_twresponse'] = $this->api_version_twresponse->DefaultValue;
+        $row['price_twresponse'] = $this->price_twresponse->DefaultValue;
+        $row['price_unit_twresponse'] = $this->price_unit_twresponse->DefaultValue;
+        $row['error_code_twresponse'] = $this->error_code_twresponse->DefaultValue;
+        $row['error_message_twresponse'] = $this->error_message_twresponse->DefaultValue;
+        $row['uri_twresponse'] = $this->uri_twresponse->DefaultValue;
+        $row['fk_id_sent'] = $this->fk_id_sent->DefaultValue;
         return $row;
     }
 
@@ -796,58 +770,198 @@ class SentTblView extends SentTbl
 
         // Common render codes for all row types
 
-        // id_sent
+        // id_twresponse
 
-        // datetime_sent
+        // sid_twresponse
 
-        // fk_id_message
+        // date_created_twresponse
 
-        // twiliocode_sent
+        // date_updated_twresponse
+
+        // date_sent_twresponse
+
+        // account_sid_twresponse
+
+        // to_twresponse
+
+        // from_twresponse
+
+        // messaging_service_sid_twresponse
+
+        // body_twresponse
+
+        // status_twresponse
+
+        // num_segments_twresponse
+
+        // num_media_twresponse
+
+        // direction_twresponse
+
+        // api_version_twresponse
+
+        // price_twresponse
+
+        // price_unit_twresponse
+
+        // error_code_twresponse
+
+        // error_message_twresponse
+
+        // uri_twresponse
+
+        // fk_id_sent
 
         // View row
         if ($this->RowType == ROWTYPE_VIEW) {
-            // datetime_sent
-            $this->datetime_sent->ViewValue = $this->datetime_sent->CurrentValue;
-            $this->datetime_sent->ViewValue = FormatDateTime($this->datetime_sent->ViewValue, $this->datetime_sent->formatPattern());
+            // id_twresponse
+            $this->id_twresponse->ViewValue = $this->id_twresponse->CurrentValue;
+            $this->id_twresponse->ViewValue = FormatNumber($this->id_twresponse->ViewValue, $this->id_twresponse->formatPattern());
 
-            // fk_id_message
-            $this->fk_id_message->ViewValue = $this->fk_id_message->CurrentValue;
-            $curVal = strval($this->fk_id_message->CurrentValue);
-            if ($curVal != "") {
-                $this->fk_id_message->ViewValue = $this->fk_id_message->lookupCacheOption($curVal);
-                if ($this->fk_id_message->ViewValue === null) { // Lookup from database
-                    $filterWrk = SearchFilter("[id_message]", "=", $curVal, DATATYPE_NUMBER, "");
-                    $sqlWrk = $this->fk_id_message->Lookup->getSql(false, $filterWrk, '', $this, true, true);
-                    $conn = Conn();
-                    $config = $conn->getConfiguration();
-                    $config->setResultCacheImpl($this->Cache);
-                    $rswrk = $conn->executeCacheQuery($sqlWrk, [], [], $this->CacheProfile)->fetchAll();
-                    $ari = count($rswrk);
-                    if ($ari > 0) { // Lookup values found
-                        $arwrk = $this->fk_id_message->Lookup->renderViewRow($rswrk[0]);
-                        $this->fk_id_message->ViewValue = $this->fk_id_message->displayValue($arwrk);
-                    } else {
-                        $this->fk_id_message->ViewValue = FormatNumber($this->fk_id_message->CurrentValue, $this->fk_id_message->formatPattern());
-                    }
-                }
-            } else {
-                $this->fk_id_message->ViewValue = null;
-            }
+            // sid_twresponse
+            $this->sid_twresponse->ViewValue = $this->sid_twresponse->CurrentValue;
 
-            // twiliocode_sent
-            $this->twiliocode_sent->ViewValue = $this->twiliocode_sent->CurrentValue;
+            // date_created_twresponse
+            $this->date_created_twresponse->ViewValue = $this->date_created_twresponse->CurrentValue;
 
-            // datetime_sent
-            $this->datetime_sent->HrefValue = "";
-            $this->datetime_sent->TooltipValue = "";
+            // date_updated_twresponse
+            $this->date_updated_twresponse->ViewValue = $this->date_updated_twresponse->CurrentValue;
 
-            // fk_id_message
-            $this->fk_id_message->HrefValue = "";
-            $this->fk_id_message->TooltipValue = "";
+            // date_sent_twresponse
+            $this->date_sent_twresponse->ViewValue = $this->date_sent_twresponse->CurrentValue;
 
-            // twiliocode_sent
-            $this->twiliocode_sent->HrefValue = "";
-            $this->twiliocode_sent->TooltipValue = "";
+            // account_sid_twresponse
+            $this->account_sid_twresponse->ViewValue = $this->account_sid_twresponse->CurrentValue;
+
+            // to_twresponse
+            $this->to_twresponse->ViewValue = $this->to_twresponse->CurrentValue;
+
+            // from_twresponse
+            $this->from_twresponse->ViewValue = $this->from_twresponse->CurrentValue;
+
+            // messaging_service_sid_twresponse
+            $this->messaging_service_sid_twresponse->ViewValue = $this->messaging_service_sid_twresponse->CurrentValue;
+
+            // body_twresponse
+            $this->body_twresponse->ViewValue = $this->body_twresponse->CurrentValue;
+
+            // status_twresponse
+            $this->status_twresponse->ViewValue = $this->status_twresponse->CurrentValue;
+
+            // num_segments_twresponse
+            $this->num_segments_twresponse->ViewValue = $this->num_segments_twresponse->CurrentValue;
+
+            // num_media_twresponse
+            $this->num_media_twresponse->ViewValue = $this->num_media_twresponse->CurrentValue;
+
+            // direction_twresponse
+            $this->direction_twresponse->ViewValue = $this->direction_twresponse->CurrentValue;
+
+            // api_version_twresponse
+            $this->api_version_twresponse->ViewValue = $this->api_version_twresponse->CurrentValue;
+
+            // price_twresponse
+            $this->price_twresponse->ViewValue = $this->price_twresponse->CurrentValue;
+
+            // price_unit_twresponse
+            $this->price_unit_twresponse->ViewValue = $this->price_unit_twresponse->CurrentValue;
+
+            // error_code_twresponse
+            $this->error_code_twresponse->ViewValue = $this->error_code_twresponse->CurrentValue;
+
+            // error_message_twresponse
+            $this->error_message_twresponse->ViewValue = $this->error_message_twresponse->CurrentValue;
+
+            // uri_twresponse
+            $this->uri_twresponse->ViewValue = $this->uri_twresponse->CurrentValue;
+
+            // fk_id_sent
+            $this->fk_id_sent->ViewValue = $this->fk_id_sent->CurrentValue;
+            $this->fk_id_sent->ViewValue = FormatNumber($this->fk_id_sent->ViewValue, $this->fk_id_sent->formatPattern());
+
+            // id_twresponse
+            $this->id_twresponse->HrefValue = "";
+            $this->id_twresponse->TooltipValue = "";
+
+            // sid_twresponse
+            $this->sid_twresponse->HrefValue = "";
+            $this->sid_twresponse->TooltipValue = "";
+
+            // date_created_twresponse
+            $this->date_created_twresponse->HrefValue = "";
+            $this->date_created_twresponse->TooltipValue = "";
+
+            // date_updated_twresponse
+            $this->date_updated_twresponse->HrefValue = "";
+            $this->date_updated_twresponse->TooltipValue = "";
+
+            // date_sent_twresponse
+            $this->date_sent_twresponse->HrefValue = "";
+            $this->date_sent_twresponse->TooltipValue = "";
+
+            // account_sid_twresponse
+            $this->account_sid_twresponse->HrefValue = "";
+            $this->account_sid_twresponse->TooltipValue = "";
+
+            // to_twresponse
+            $this->to_twresponse->HrefValue = "";
+            $this->to_twresponse->TooltipValue = "";
+
+            // from_twresponse
+            $this->from_twresponse->HrefValue = "";
+            $this->from_twresponse->TooltipValue = "";
+
+            // messaging_service_sid_twresponse
+            $this->messaging_service_sid_twresponse->HrefValue = "";
+            $this->messaging_service_sid_twresponse->TooltipValue = "";
+
+            // body_twresponse
+            $this->body_twresponse->HrefValue = "";
+            $this->body_twresponse->TooltipValue = "";
+
+            // status_twresponse
+            $this->status_twresponse->HrefValue = "";
+            $this->status_twresponse->TooltipValue = "";
+
+            // num_segments_twresponse
+            $this->num_segments_twresponse->HrefValue = "";
+            $this->num_segments_twresponse->TooltipValue = "";
+
+            // num_media_twresponse
+            $this->num_media_twresponse->HrefValue = "";
+            $this->num_media_twresponse->TooltipValue = "";
+
+            // direction_twresponse
+            $this->direction_twresponse->HrefValue = "";
+            $this->direction_twresponse->TooltipValue = "";
+
+            // api_version_twresponse
+            $this->api_version_twresponse->HrefValue = "";
+            $this->api_version_twresponse->TooltipValue = "";
+
+            // price_twresponse
+            $this->price_twresponse->HrefValue = "";
+            $this->price_twresponse->TooltipValue = "";
+
+            // price_unit_twresponse
+            $this->price_unit_twresponse->HrefValue = "";
+            $this->price_unit_twresponse->TooltipValue = "";
+
+            // error_code_twresponse
+            $this->error_code_twresponse->HrefValue = "";
+            $this->error_code_twresponse->TooltipValue = "";
+
+            // error_message_twresponse
+            $this->error_message_twresponse->HrefValue = "";
+            $this->error_message_twresponse->TooltipValue = "";
+
+            // uri_twresponse
+            $this->uri_twresponse->HrefValue = "";
+            $this->uri_twresponse->TooltipValue = "";
+
+            // fk_id_sent
+            $this->fk_id_sent->HrefValue = "";
+            $this->fk_id_sent->TooltipValue = "";
         }
 
         // Call Row Rendered event
@@ -869,15 +983,15 @@ class SentTblView extends SentTbl
                 $this->DbMasterFilter = "";
                 $this->DbDetailFilter = "";
             }
-            if ($masterTblVar == "message_tbl") {
+            if ($masterTblVar == "sent_tbl") {
                 $validMaster = true;
-                $masterTbl = Container("message_tbl");
-                if (($parm = Get("fk_id_message", Get("fk_id_message"))) !== null) {
-                    $masterTbl->id_message->setQueryStringValue($parm);
-                    $this->fk_id_message->QueryStringValue = $masterTbl->id_message->QueryStringValue; // DO NOT change, master/detail key data type can be different
-                    $this->fk_id_message->setSessionValue($this->fk_id_message->QueryStringValue);
-                    $foreignKeys["fk_id_message"] = $this->fk_id_message->QueryStringValue;
-                    if (!is_numeric($masterTbl->id_message->QueryStringValue)) {
+                $masterTbl = Container("sent_tbl");
+                if (($parm = Get("fk_id_sent", Get("fk_id_sent"))) !== null) {
+                    $masterTbl->id_sent->setQueryStringValue($parm);
+                    $this->fk_id_sent->QueryStringValue = $masterTbl->id_sent->QueryStringValue; // DO NOT change, master/detail key data type can be different
+                    $this->fk_id_sent->setSessionValue($this->fk_id_sent->QueryStringValue);
+                    $foreignKeys["fk_id_sent"] = $this->fk_id_sent->QueryStringValue;
+                    if (!is_numeric($masterTbl->id_sent->QueryStringValue)) {
                         $validMaster = false;
                     }
                 } else {
@@ -891,15 +1005,15 @@ class SentTblView extends SentTbl
                     $this->DbMasterFilter = "";
                     $this->DbDetailFilter = "";
             }
-            if ($masterTblVar == "message_tbl") {
+            if ($masterTblVar == "sent_tbl") {
                 $validMaster = true;
-                $masterTbl = Container("message_tbl");
-                if (($parm = Post("fk_id_message", Post("fk_id_message"))) !== null) {
-                    $masterTbl->id_message->setFormValue($parm);
-                    $this->fk_id_message->FormValue = $masterTbl->id_message->FormValue;
-                    $this->fk_id_message->setSessionValue($this->fk_id_message->FormValue);
-                    $foreignKeys["fk_id_message"] = $this->fk_id_message->FormValue;
-                    if (!is_numeric($masterTbl->id_message->FormValue)) {
+                $masterTbl = Container("sent_tbl");
+                if (($parm = Post("fk_id_sent", Post("fk_id_sent"))) !== null) {
+                    $masterTbl->id_sent->setFormValue($parm);
+                    $this->fk_id_sent->FormValue = $masterTbl->id_sent->FormValue;
+                    $this->fk_id_sent->setSessionValue($this->fk_id_sent->FormValue);
+                    $foreignKeys["fk_id_sent"] = $this->fk_id_sent->FormValue;
+                    if (!is_numeric($masterTbl->id_sent->FormValue)) {
                         $validMaster = false;
                     }
                 } else {
@@ -919,43 +1033,14 @@ class SentTblView extends SentTbl
             }
 
             // Clear previous master key from Session
-            if ($masterTblVar != "message_tbl") {
-                if (!array_key_exists("fk_id_message", $foreignKeys)) { // Not current foreign key
-                    $this->fk_id_message->setSessionValue("");
+            if ($masterTblVar != "sent_tbl") {
+                if (!array_key_exists("fk_id_sent", $foreignKeys)) { // Not current foreign key
+                    $this->fk_id_sent->setSessionValue("");
                 }
             }
         }
         $this->DbMasterFilter = $this->getMasterFilterFromSession(); // Get master filter from session
         $this->DbDetailFilter = $this->getDetailFilterFromSession(); // Get detail filter from session
-    }
-
-    // Set up detail parms based on QueryString
-    protected function setupDetailParms()
-    {
-        // Get the keys for master table
-        $detailTblVar = Get(Config("TABLE_SHOW_DETAIL"));
-        if ($detailTblVar !== null) {
-            $this->setCurrentDetailTable($detailTblVar);
-        } else {
-            $detailTblVar = $this->getCurrentDetailTable();
-        }
-        if ($detailTblVar != "") {
-            $detailTblVar = explode(",", $detailTblVar);
-            if (in_array("twresponse_tbl", $detailTblVar)) {
-                $detailPageObj = Container("TwresponseTblGrid");
-                if ($detailPageObj->DetailView) {
-                    $detailPageObj->EventCancelled = $this->EventCancelled;
-                    $detailPageObj->CurrentMode = "view";
-
-                    // Save current master table to detail table
-                    $detailPageObj->setCurrentMasterTable($this->TableVar);
-                    $detailPageObj->setStartRecordNumber(1);
-                    $detailPageObj->fk_id_sent->IsDetailKey = true;
-                    $detailPageObj->fk_id_sent->CurrentValue = $this->id_sent->CurrentValue;
-                    $detailPageObj->fk_id_sent->setSessionValue($detailPageObj->fk_id_sent->CurrentValue);
-                }
-            }
-        }
     }
 
     // Set up Breadcrumb
@@ -964,7 +1049,7 @@ class SentTblView extends SentTbl
         global $Breadcrumb, $Language;
         $Breadcrumb = new Breadcrumb("index");
         $url = CurrentUrl();
-        $Breadcrumb->add("list", $this->TableVar, $this->addMasterUrl("SentTblList"), "", $this->TableVar, true);
+        $Breadcrumb->add("list", $this->TableVar, $this->addMasterUrl("TwresponseTblList"), "", $this->TableVar, true);
         $pageId = "view";
         $Breadcrumb->add("view", $pageId, $url);
     }
@@ -982,8 +1067,6 @@ class SentTblView extends SentTbl
 
             // Set up lookup SQL and connection
             switch ($fld->FieldVar) {
-                case "x_fk_id_message":
-                    break;
                 default:
                     $lookupFilter = "";
                     break;

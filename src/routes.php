@@ -61,6 +61,17 @@ return function (App $app) {
         }
     );
 
+    // twresponse_tbl
+    $app->map(["GET","POST","OPTIONS"], '/TwresponseTblList[/{id_twresponse}]', TwresponseTblController::class . ':list')->add(PermissionMiddleware::class)->setName('TwresponseTblList-twresponse_tbl-list'); // list
+    $app->map(["GET","POST","OPTIONS"], '/TwresponseTblView[/{id_twresponse}]', TwresponseTblController::class . ':view')->add(PermissionMiddleware::class)->setName('TwresponseTblView-twresponse_tbl-view'); // view
+    $app->group(
+        '/twresponse_tbl',
+        function (RouteCollectorProxy $group) {
+            $group->map(["GET","POST","OPTIONS"], '/' . Config('LIST_ACTION') . '[/{id_twresponse}]', TwresponseTblController::class . ':list')->add(PermissionMiddleware::class)->setName('twresponse_tbl/list-twresponse_tbl-list-2'); // list
+            $group->map(["GET","POST","OPTIONS"], '/' . Config('VIEW_ACTION') . '[/{id_twresponse}]', TwresponseTblController::class . ':view')->add(PermissionMiddleware::class)->setName('twresponse_tbl/view-twresponse_tbl-view-2'); // view
+        }
+    );
+
     // captcha
     $app->map(["GET","OPTIONS"], '/captcha[/{page}]', OthersController::class . ':captcha')->add(PermissionMiddleware::class)->setName('captcha');
 

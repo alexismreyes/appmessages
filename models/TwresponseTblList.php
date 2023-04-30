@@ -10,7 +10,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 /**
  * Page class
  */
-class SentTblList extends SentTbl
+class TwresponseTblList extends TwresponseTbl
 {
     use MessagesTrait;
 
@@ -21,7 +21,7 @@ class SentTblList extends SentTbl
     public $ProjectID = PROJECT_ID;
 
     // Page object name
-    public $PageObjName = "SentTblList";
+    public $PageObjName = "TwresponseTblList";
 
     // View file path
     public $View = null;
@@ -33,13 +33,13 @@ class SentTblList extends SentTbl
     public $RenderingView = false;
 
     // Grid form hidden field names
-    public $FormName = "fsent_tbllist";
+    public $FormName = "ftwresponse_tbllist";
     public $FormActionName = "";
     public $FormBlankRowName = "";
     public $FormKeyCountName = "";
 
     // CSS class/style
-    public $CurrentPageName = "SentTblList";
+    public $CurrentPageName = "TwresponseTblList";
 
     // Page URLs
     public $AddUrl;
@@ -145,8 +145,8 @@ class SentTblList extends SentTbl
         $this->FormActionName = Config("FORM_ROW_ACTION_NAME");
         $this->FormBlankRowName = Config("FORM_BLANK_ROW_NAME");
         $this->FormKeyCountName = Config("FORM_KEY_COUNT_NAME");
-        $this->TableVar = 'sent_tbl';
-        $this->TableName = 'sent_tbl';
+        $this->TableVar = 'twresponse_tbl';
+        $this->TableName = 'twresponse_tbl';
 
         // Table CSS class
         $this->TableClass = "table table-bordered table-hover table-sm ew-table";
@@ -166,26 +166,26 @@ class SentTblList extends SentTbl
         // Language object
         $Language = Container("language");
 
-        // Table object (sent_tbl)
-        if (!isset($GLOBALS["sent_tbl"]) || get_class($GLOBALS["sent_tbl"]) == PROJECT_NAMESPACE . "sent_tbl") {
-            $GLOBALS["sent_tbl"] = &$this;
+        // Table object (twresponse_tbl)
+        if (!isset($GLOBALS["twresponse_tbl"]) || get_class($GLOBALS["twresponse_tbl"]) == PROJECT_NAMESPACE . "twresponse_tbl") {
+            $GLOBALS["twresponse_tbl"] = &$this;
         }
 
         // Page URL
         $pageUrl = $this->pageUrl(false);
 
         // Initialize URLs
-        $this->AddUrl = "SentTblAdd?" . Config("TABLE_SHOW_DETAIL") . "=";
+        $this->AddUrl = "TwresponseTblAdd";
         $this->InlineAddUrl = $pageUrl . "action=add";
         $this->GridAddUrl = $pageUrl . "action=gridadd";
         $this->GridEditUrl = $pageUrl . "action=gridedit";
         $this->MultiEditUrl = $pageUrl . "action=multiedit";
-        $this->MultiDeleteUrl = "SentTblDelete";
-        $this->MultiUpdateUrl = "SentTblUpdate";
+        $this->MultiDeleteUrl = "TwresponseTblDelete";
+        $this->MultiUpdateUrl = "TwresponseTblUpdate";
 
         // Table name (for backward compatibility only)
         if (!defined(PROJECT_NAMESPACE . "TABLE_NAME")) {
-            define(PROJECT_NAMESPACE . "TABLE_NAME", 'sent_tbl');
+            define(PROJECT_NAMESPACE . "TABLE_NAME", 'twresponse_tbl');
         }
 
         // Start timer
@@ -337,7 +337,7 @@ class SentTblList extends SentTbl
                 $pageName = GetPageName($url);
                 if ($pageName != $this->getListUrl()) { // Not List page => View page
                     $result["caption"] = $this->getModalCaption($pageName);
-                    $result["view"] = $pageName == "SentTblView"; // If View page, no primary button
+                    $result["view"] = $pageName == "TwresponseTblView"; // If View page, no primary button
                 } else { // List page
                     // $result["list"] = $this->PageID == "search"; // Refresh List page if current page is Search page
                     $result["error"] = $this->getFailureMessage(); // List page should not be shown as modal => error
@@ -430,7 +430,7 @@ class SentTblList extends SentTbl
     {
         $key = "";
         if (is_array($ar)) {
-            $key .= @$ar['id_sent'];
+            $key .= @$ar['id_twresponse'];
         }
         return $key;
     }
@@ -443,7 +443,7 @@ class SentTblList extends SentTbl
     protected function hideFieldsForAddEdit()
     {
         if ($this->isAdd() || $this->isCopy() || $this->isGridAdd()) {
-            $this->id_sent->Visible = false;
+            $this->id_twresponse->Visible = false;
         }
     }
 
@@ -635,10 +635,27 @@ class SentTblList extends SentTbl
 
         // Set up list options
         $this->setupListOptions();
-        $this->id_sent->Visible = false;
-        $this->datetime_sent->setVisibility();
-        $this->fk_id_message->setVisibility();
-        $this->twiliocode_sent->setVisibility();
+        $this->id_twresponse->setVisibility();
+        $this->sid_twresponse->Visible = false;
+        $this->date_created_twresponse->setVisibility();
+        $this->date_updated_twresponse->Visible = false;
+        $this->date_sent_twresponse->Visible = false;
+        $this->account_sid_twresponse->Visible = false;
+        $this->to_twresponse->setVisibility();
+        $this->from_twresponse->setVisibility();
+        $this->messaging_service_sid_twresponse->Visible = false;
+        $this->body_twresponse->setVisibility();
+        $this->status_twresponse->Visible = false;
+        $this->num_segments_twresponse->Visible = false;
+        $this->num_media_twresponse->Visible = false;
+        $this->direction_twresponse->Visible = false;
+        $this->api_version_twresponse->Visible = false;
+        $this->price_twresponse->Visible = false;
+        $this->price_unit_twresponse->Visible = false;
+        $this->error_code_twresponse->Visible = false;
+        $this->error_message_twresponse->Visible = false;
+        $this->uri_twresponse->Visible = false;
+        $this->fk_id_sent->Visible = false;
 
         // Set lookup cache
         if (!in_array($this->PageID, Config("LOOKUP_CACHE_PAGE_IDS"))) {
@@ -673,12 +690,9 @@ class SentTblList extends SentTbl
             $this->ListActions->add($name, $action);
         }
 
-        // Set up lookup cache
-        $this->setupLookupOptions($this->fk_id_message);
-
         // Update form name to avoid conflict
         if ($this->IsModal) {
-            $this->FormName = "fsent_tblgrid";
+            $this->FormName = "ftwresponse_tblgrid";
         }
 
         // Set up page action
@@ -811,13 +825,13 @@ class SentTblList extends SentTbl
         AddFilter($filter, $this->SearchWhere);
 
         // Load master record
-        if ($this->CurrentMode != "add" && $this->DbMasterFilter != "" && $this->getCurrentMasterTable() == "message_tbl") {
-            $masterTbl = Container("message_tbl");
+        if ($this->CurrentMode != "add" && $this->DbMasterFilter != "" && $this->getCurrentMasterTable() == "sent_tbl") {
+            $masterTbl = Container("sent_tbl");
             $rsmaster = $masterTbl->loadRs($this->DbMasterFilter)->fetchAssociative();
             $this->MasterRecordExists = $rsmaster !== false;
             if (!$this->MasterRecordExists) {
                 $this->setFailureMessage($Language->phrase("NoRecord")); // Set no record found
-                $this->terminate("MessageTblList"); // Return to master page
+                $this->terminate("SentTblList"); // Return to master page
                 return;
             } else {
                 $masterTbl->loadListRowValues($rsmaster);
@@ -1017,9 +1031,27 @@ class SentTblList extends SentTbl
         // Initialize
         $filterList = "";
         $savedFilterList = "";
-        $filterList = Concat($filterList, $this->id_sent->AdvancedSearch->toJson(), ","); // Field id_sent
-        $filterList = Concat($filterList, $this->datetime_sent->AdvancedSearch->toJson(), ","); // Field datetime_sent
-        $filterList = Concat($filterList, $this->twiliocode_sent->AdvancedSearch->toJson(), ","); // Field twiliocode_sent
+        $filterList = Concat($filterList, $this->id_twresponse->AdvancedSearch->toJson(), ","); // Field id_twresponse
+        $filterList = Concat($filterList, $this->sid_twresponse->AdvancedSearch->toJson(), ","); // Field sid_twresponse
+        $filterList = Concat($filterList, $this->date_created_twresponse->AdvancedSearch->toJson(), ","); // Field date_created_twresponse
+        $filterList = Concat($filterList, $this->date_updated_twresponse->AdvancedSearch->toJson(), ","); // Field date_updated_twresponse
+        $filterList = Concat($filterList, $this->date_sent_twresponse->AdvancedSearch->toJson(), ","); // Field date_sent_twresponse
+        $filterList = Concat($filterList, $this->account_sid_twresponse->AdvancedSearch->toJson(), ","); // Field account_sid_twresponse
+        $filterList = Concat($filterList, $this->to_twresponse->AdvancedSearch->toJson(), ","); // Field to_twresponse
+        $filterList = Concat($filterList, $this->from_twresponse->AdvancedSearch->toJson(), ","); // Field from_twresponse
+        $filterList = Concat($filterList, $this->messaging_service_sid_twresponse->AdvancedSearch->toJson(), ","); // Field messaging_service_sid_twresponse
+        $filterList = Concat($filterList, $this->body_twresponse->AdvancedSearch->toJson(), ","); // Field body_twresponse
+        $filterList = Concat($filterList, $this->status_twresponse->AdvancedSearch->toJson(), ","); // Field status_twresponse
+        $filterList = Concat($filterList, $this->num_segments_twresponse->AdvancedSearch->toJson(), ","); // Field num_segments_twresponse
+        $filterList = Concat($filterList, $this->num_media_twresponse->AdvancedSearch->toJson(), ","); // Field num_media_twresponse
+        $filterList = Concat($filterList, $this->direction_twresponse->AdvancedSearch->toJson(), ","); // Field direction_twresponse
+        $filterList = Concat($filterList, $this->api_version_twresponse->AdvancedSearch->toJson(), ","); // Field api_version_twresponse
+        $filterList = Concat($filterList, $this->price_twresponse->AdvancedSearch->toJson(), ","); // Field price_twresponse
+        $filterList = Concat($filterList, $this->price_unit_twresponse->AdvancedSearch->toJson(), ","); // Field price_unit_twresponse
+        $filterList = Concat($filterList, $this->error_code_twresponse->AdvancedSearch->toJson(), ","); // Field error_code_twresponse
+        $filterList = Concat($filterList, $this->error_message_twresponse->AdvancedSearch->toJson(), ","); // Field error_message_twresponse
+        $filterList = Concat($filterList, $this->uri_twresponse->AdvancedSearch->toJson(), ","); // Field uri_twresponse
+        $filterList = Concat($filterList, $this->fk_id_sent->AdvancedSearch->toJson(), ","); // Field fk_id_sent
         if ($this->BasicSearch->Keyword != "") {
             $wrk = "\"" . Config("TABLE_BASIC_SEARCH") . "\":\"" . JsEncode($this->BasicSearch->Keyword) . "\",\"" . Config("TABLE_BASIC_SEARCH_TYPE") . "\":\"" . JsEncode($this->BasicSearch->Type) . "\"";
             $filterList = Concat($filterList, $wrk, ",");
@@ -1041,7 +1073,7 @@ class SentTblList extends SentTbl
         global $UserProfile;
         if (Post("ajax") == "savefilters") { // Save filter request (Ajax)
             $filters = Post("filters");
-            $UserProfile->setSearchFilters(CurrentUserName(), "fsent_tblsrch", $filters);
+            $UserProfile->setSearchFilters(CurrentUserName(), "ftwresponse_tblsrch", $filters);
             WriteJson([["success" => true]]); // Success
             return true;
         } elseif (Post("cmd") == "resetfilter") {
@@ -1060,29 +1092,173 @@ class SentTblList extends SentTbl
         $filter = json_decode(Post("filter"), true);
         $this->Command = "search";
 
-        // Field id_sent
-        $this->id_sent->AdvancedSearch->SearchValue = @$filter["x_id_sent"];
-        $this->id_sent->AdvancedSearch->SearchOperator = @$filter["z_id_sent"];
-        $this->id_sent->AdvancedSearch->SearchCondition = @$filter["v_id_sent"];
-        $this->id_sent->AdvancedSearch->SearchValue2 = @$filter["y_id_sent"];
-        $this->id_sent->AdvancedSearch->SearchOperator2 = @$filter["w_id_sent"];
-        $this->id_sent->AdvancedSearch->save();
+        // Field id_twresponse
+        $this->id_twresponse->AdvancedSearch->SearchValue = @$filter["x_id_twresponse"];
+        $this->id_twresponse->AdvancedSearch->SearchOperator = @$filter["z_id_twresponse"];
+        $this->id_twresponse->AdvancedSearch->SearchCondition = @$filter["v_id_twresponse"];
+        $this->id_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_id_twresponse"];
+        $this->id_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_id_twresponse"];
+        $this->id_twresponse->AdvancedSearch->save();
 
-        // Field datetime_sent
-        $this->datetime_sent->AdvancedSearch->SearchValue = @$filter["x_datetime_sent"];
-        $this->datetime_sent->AdvancedSearch->SearchOperator = @$filter["z_datetime_sent"];
-        $this->datetime_sent->AdvancedSearch->SearchCondition = @$filter["v_datetime_sent"];
-        $this->datetime_sent->AdvancedSearch->SearchValue2 = @$filter["y_datetime_sent"];
-        $this->datetime_sent->AdvancedSearch->SearchOperator2 = @$filter["w_datetime_sent"];
-        $this->datetime_sent->AdvancedSearch->save();
+        // Field sid_twresponse
+        $this->sid_twresponse->AdvancedSearch->SearchValue = @$filter["x_sid_twresponse"];
+        $this->sid_twresponse->AdvancedSearch->SearchOperator = @$filter["z_sid_twresponse"];
+        $this->sid_twresponse->AdvancedSearch->SearchCondition = @$filter["v_sid_twresponse"];
+        $this->sid_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_sid_twresponse"];
+        $this->sid_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_sid_twresponse"];
+        $this->sid_twresponse->AdvancedSearch->save();
 
-        // Field twiliocode_sent
-        $this->twiliocode_sent->AdvancedSearch->SearchValue = @$filter["x_twiliocode_sent"];
-        $this->twiliocode_sent->AdvancedSearch->SearchOperator = @$filter["z_twiliocode_sent"];
-        $this->twiliocode_sent->AdvancedSearch->SearchCondition = @$filter["v_twiliocode_sent"];
-        $this->twiliocode_sent->AdvancedSearch->SearchValue2 = @$filter["y_twiliocode_sent"];
-        $this->twiliocode_sent->AdvancedSearch->SearchOperator2 = @$filter["w_twiliocode_sent"];
-        $this->twiliocode_sent->AdvancedSearch->save();
+        // Field date_created_twresponse
+        $this->date_created_twresponse->AdvancedSearch->SearchValue = @$filter["x_date_created_twresponse"];
+        $this->date_created_twresponse->AdvancedSearch->SearchOperator = @$filter["z_date_created_twresponse"];
+        $this->date_created_twresponse->AdvancedSearch->SearchCondition = @$filter["v_date_created_twresponse"];
+        $this->date_created_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_date_created_twresponse"];
+        $this->date_created_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_date_created_twresponse"];
+        $this->date_created_twresponse->AdvancedSearch->save();
+
+        // Field date_updated_twresponse
+        $this->date_updated_twresponse->AdvancedSearch->SearchValue = @$filter["x_date_updated_twresponse"];
+        $this->date_updated_twresponse->AdvancedSearch->SearchOperator = @$filter["z_date_updated_twresponse"];
+        $this->date_updated_twresponse->AdvancedSearch->SearchCondition = @$filter["v_date_updated_twresponse"];
+        $this->date_updated_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_date_updated_twresponse"];
+        $this->date_updated_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_date_updated_twresponse"];
+        $this->date_updated_twresponse->AdvancedSearch->save();
+
+        // Field date_sent_twresponse
+        $this->date_sent_twresponse->AdvancedSearch->SearchValue = @$filter["x_date_sent_twresponse"];
+        $this->date_sent_twresponse->AdvancedSearch->SearchOperator = @$filter["z_date_sent_twresponse"];
+        $this->date_sent_twresponse->AdvancedSearch->SearchCondition = @$filter["v_date_sent_twresponse"];
+        $this->date_sent_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_date_sent_twresponse"];
+        $this->date_sent_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_date_sent_twresponse"];
+        $this->date_sent_twresponse->AdvancedSearch->save();
+
+        // Field account_sid_twresponse
+        $this->account_sid_twresponse->AdvancedSearch->SearchValue = @$filter["x_account_sid_twresponse"];
+        $this->account_sid_twresponse->AdvancedSearch->SearchOperator = @$filter["z_account_sid_twresponse"];
+        $this->account_sid_twresponse->AdvancedSearch->SearchCondition = @$filter["v_account_sid_twresponse"];
+        $this->account_sid_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_account_sid_twresponse"];
+        $this->account_sid_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_account_sid_twresponse"];
+        $this->account_sid_twresponse->AdvancedSearch->save();
+
+        // Field to_twresponse
+        $this->to_twresponse->AdvancedSearch->SearchValue = @$filter["x_to_twresponse"];
+        $this->to_twresponse->AdvancedSearch->SearchOperator = @$filter["z_to_twresponse"];
+        $this->to_twresponse->AdvancedSearch->SearchCondition = @$filter["v_to_twresponse"];
+        $this->to_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_to_twresponse"];
+        $this->to_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_to_twresponse"];
+        $this->to_twresponse->AdvancedSearch->save();
+
+        // Field from_twresponse
+        $this->from_twresponse->AdvancedSearch->SearchValue = @$filter["x_from_twresponse"];
+        $this->from_twresponse->AdvancedSearch->SearchOperator = @$filter["z_from_twresponse"];
+        $this->from_twresponse->AdvancedSearch->SearchCondition = @$filter["v_from_twresponse"];
+        $this->from_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_from_twresponse"];
+        $this->from_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_from_twresponse"];
+        $this->from_twresponse->AdvancedSearch->save();
+
+        // Field messaging_service_sid_twresponse
+        $this->messaging_service_sid_twresponse->AdvancedSearch->SearchValue = @$filter["x_messaging_service_sid_twresponse"];
+        $this->messaging_service_sid_twresponse->AdvancedSearch->SearchOperator = @$filter["z_messaging_service_sid_twresponse"];
+        $this->messaging_service_sid_twresponse->AdvancedSearch->SearchCondition = @$filter["v_messaging_service_sid_twresponse"];
+        $this->messaging_service_sid_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_messaging_service_sid_twresponse"];
+        $this->messaging_service_sid_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_messaging_service_sid_twresponse"];
+        $this->messaging_service_sid_twresponse->AdvancedSearch->save();
+
+        // Field body_twresponse
+        $this->body_twresponse->AdvancedSearch->SearchValue = @$filter["x_body_twresponse"];
+        $this->body_twresponse->AdvancedSearch->SearchOperator = @$filter["z_body_twresponse"];
+        $this->body_twresponse->AdvancedSearch->SearchCondition = @$filter["v_body_twresponse"];
+        $this->body_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_body_twresponse"];
+        $this->body_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_body_twresponse"];
+        $this->body_twresponse->AdvancedSearch->save();
+
+        // Field status_twresponse
+        $this->status_twresponse->AdvancedSearch->SearchValue = @$filter["x_status_twresponse"];
+        $this->status_twresponse->AdvancedSearch->SearchOperator = @$filter["z_status_twresponse"];
+        $this->status_twresponse->AdvancedSearch->SearchCondition = @$filter["v_status_twresponse"];
+        $this->status_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_status_twresponse"];
+        $this->status_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_status_twresponse"];
+        $this->status_twresponse->AdvancedSearch->save();
+
+        // Field num_segments_twresponse
+        $this->num_segments_twresponse->AdvancedSearch->SearchValue = @$filter["x_num_segments_twresponse"];
+        $this->num_segments_twresponse->AdvancedSearch->SearchOperator = @$filter["z_num_segments_twresponse"];
+        $this->num_segments_twresponse->AdvancedSearch->SearchCondition = @$filter["v_num_segments_twresponse"];
+        $this->num_segments_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_num_segments_twresponse"];
+        $this->num_segments_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_num_segments_twresponse"];
+        $this->num_segments_twresponse->AdvancedSearch->save();
+
+        // Field num_media_twresponse
+        $this->num_media_twresponse->AdvancedSearch->SearchValue = @$filter["x_num_media_twresponse"];
+        $this->num_media_twresponse->AdvancedSearch->SearchOperator = @$filter["z_num_media_twresponse"];
+        $this->num_media_twresponse->AdvancedSearch->SearchCondition = @$filter["v_num_media_twresponse"];
+        $this->num_media_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_num_media_twresponse"];
+        $this->num_media_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_num_media_twresponse"];
+        $this->num_media_twresponse->AdvancedSearch->save();
+
+        // Field direction_twresponse
+        $this->direction_twresponse->AdvancedSearch->SearchValue = @$filter["x_direction_twresponse"];
+        $this->direction_twresponse->AdvancedSearch->SearchOperator = @$filter["z_direction_twresponse"];
+        $this->direction_twresponse->AdvancedSearch->SearchCondition = @$filter["v_direction_twresponse"];
+        $this->direction_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_direction_twresponse"];
+        $this->direction_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_direction_twresponse"];
+        $this->direction_twresponse->AdvancedSearch->save();
+
+        // Field api_version_twresponse
+        $this->api_version_twresponse->AdvancedSearch->SearchValue = @$filter["x_api_version_twresponse"];
+        $this->api_version_twresponse->AdvancedSearch->SearchOperator = @$filter["z_api_version_twresponse"];
+        $this->api_version_twresponse->AdvancedSearch->SearchCondition = @$filter["v_api_version_twresponse"];
+        $this->api_version_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_api_version_twresponse"];
+        $this->api_version_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_api_version_twresponse"];
+        $this->api_version_twresponse->AdvancedSearch->save();
+
+        // Field price_twresponse
+        $this->price_twresponse->AdvancedSearch->SearchValue = @$filter["x_price_twresponse"];
+        $this->price_twresponse->AdvancedSearch->SearchOperator = @$filter["z_price_twresponse"];
+        $this->price_twresponse->AdvancedSearch->SearchCondition = @$filter["v_price_twresponse"];
+        $this->price_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_price_twresponse"];
+        $this->price_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_price_twresponse"];
+        $this->price_twresponse->AdvancedSearch->save();
+
+        // Field price_unit_twresponse
+        $this->price_unit_twresponse->AdvancedSearch->SearchValue = @$filter["x_price_unit_twresponse"];
+        $this->price_unit_twresponse->AdvancedSearch->SearchOperator = @$filter["z_price_unit_twresponse"];
+        $this->price_unit_twresponse->AdvancedSearch->SearchCondition = @$filter["v_price_unit_twresponse"];
+        $this->price_unit_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_price_unit_twresponse"];
+        $this->price_unit_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_price_unit_twresponse"];
+        $this->price_unit_twresponse->AdvancedSearch->save();
+
+        // Field error_code_twresponse
+        $this->error_code_twresponse->AdvancedSearch->SearchValue = @$filter["x_error_code_twresponse"];
+        $this->error_code_twresponse->AdvancedSearch->SearchOperator = @$filter["z_error_code_twresponse"];
+        $this->error_code_twresponse->AdvancedSearch->SearchCondition = @$filter["v_error_code_twresponse"];
+        $this->error_code_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_error_code_twresponse"];
+        $this->error_code_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_error_code_twresponse"];
+        $this->error_code_twresponse->AdvancedSearch->save();
+
+        // Field error_message_twresponse
+        $this->error_message_twresponse->AdvancedSearch->SearchValue = @$filter["x_error_message_twresponse"];
+        $this->error_message_twresponse->AdvancedSearch->SearchOperator = @$filter["z_error_message_twresponse"];
+        $this->error_message_twresponse->AdvancedSearch->SearchCondition = @$filter["v_error_message_twresponse"];
+        $this->error_message_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_error_message_twresponse"];
+        $this->error_message_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_error_message_twresponse"];
+        $this->error_message_twresponse->AdvancedSearch->save();
+
+        // Field uri_twresponse
+        $this->uri_twresponse->AdvancedSearch->SearchValue = @$filter["x_uri_twresponse"];
+        $this->uri_twresponse->AdvancedSearch->SearchOperator = @$filter["z_uri_twresponse"];
+        $this->uri_twresponse->AdvancedSearch->SearchCondition = @$filter["v_uri_twresponse"];
+        $this->uri_twresponse->AdvancedSearch->SearchValue2 = @$filter["y_uri_twresponse"];
+        $this->uri_twresponse->AdvancedSearch->SearchOperator2 = @$filter["w_uri_twresponse"];
+        $this->uri_twresponse->AdvancedSearch->save();
+
+        // Field fk_id_sent
+        $this->fk_id_sent->AdvancedSearch->SearchValue = @$filter["x_fk_id_sent"];
+        $this->fk_id_sent->AdvancedSearch->SearchOperator = @$filter["z_fk_id_sent"];
+        $this->fk_id_sent->AdvancedSearch->SearchCondition = @$filter["v_fk_id_sent"];
+        $this->fk_id_sent->AdvancedSearch->SearchValue2 = @$filter["y_fk_id_sent"];
+        $this->fk_id_sent->AdvancedSearch->SearchOperator2 = @$filter["w_fk_id_sent"];
+        $this->fk_id_sent->AdvancedSearch->save();
         $this->BasicSearch->setKeyword(@$filter[Config("TABLE_BASIC_SEARCH")]);
         $this->BasicSearch->setType(@$filter[Config("TABLE_BASIC_SEARCH_TYPE")]);
     }
@@ -1119,8 +1295,25 @@ class SentTblList extends SentTbl
 
         // Fields to search
         $searchFlds = [];
-        $searchFlds[] = &$this->fk_id_message;
-        $searchFlds[] = &$this->twiliocode_sent;
+        $searchFlds[] = &$this->sid_twresponse;
+        $searchFlds[] = &$this->date_created_twresponse;
+        $searchFlds[] = &$this->date_updated_twresponse;
+        $searchFlds[] = &$this->date_sent_twresponse;
+        $searchFlds[] = &$this->account_sid_twresponse;
+        $searchFlds[] = &$this->to_twresponse;
+        $searchFlds[] = &$this->from_twresponse;
+        $searchFlds[] = &$this->messaging_service_sid_twresponse;
+        $searchFlds[] = &$this->body_twresponse;
+        $searchFlds[] = &$this->status_twresponse;
+        $searchFlds[] = &$this->num_segments_twresponse;
+        $searchFlds[] = &$this->num_media_twresponse;
+        $searchFlds[] = &$this->direction_twresponse;
+        $searchFlds[] = &$this->api_version_twresponse;
+        $searchFlds[] = &$this->price_twresponse;
+        $searchFlds[] = &$this->price_unit_twresponse;
+        $searchFlds[] = &$this->error_code_twresponse;
+        $searchFlds[] = &$this->error_message_twresponse;
+        $searchFlds[] = &$this->uri_twresponse;
         $searchKeyword = $default ? $this->BasicSearch->KeywordDefault : $this->BasicSearch->Keyword;
         $searchType = $default ? $this->BasicSearch->TypeDefault : $this->BasicSearch->Type;
 
@@ -1199,9 +1392,11 @@ class SentTblList extends SentTbl
         if (Get("order") !== null) {
             $this->CurrentOrder = Get("order");
             $this->CurrentOrderType = Get("ordertype", "");
-            $this->updateSort($this->datetime_sent); // datetime_sent
-            $this->updateSort($this->fk_id_message); // fk_id_message
-            $this->updateSort($this->twiliocode_sent); // twiliocode_sent
+            $this->updateSort($this->id_twresponse); // id_twresponse
+            $this->updateSort($this->date_created_twresponse); // date_created_twresponse
+            $this->updateSort($this->to_twresponse); // to_twresponse
+            $this->updateSort($this->from_twresponse); // from_twresponse
+            $this->updateSort($this->body_twresponse); // body_twresponse
             $this->setStartRecordNumber(1); // Reset start position
         }
 
@@ -1227,17 +1422,34 @@ class SentTblList extends SentTbl
                 $this->setCurrentMasterTable(""); // Clear master table
                 $this->DbMasterFilter = "";
                 $this->DbDetailFilter = "";
-                        $this->fk_id_message->setSessionValue("");
+                        $this->fk_id_sent->setSessionValue("");
             }
 
             // Reset (clear) sorting order
             if ($this->Command == "resetsort") {
                 $orderBy = "";
                 $this->setSessionOrderBy($orderBy);
-                $this->id_sent->setSort("");
-                $this->datetime_sent->setSort("");
-                $this->fk_id_message->setSort("");
-                $this->twiliocode_sent->setSort("");
+                $this->id_twresponse->setSort("");
+                $this->sid_twresponse->setSort("");
+                $this->date_created_twresponse->setSort("");
+                $this->date_updated_twresponse->setSort("");
+                $this->date_sent_twresponse->setSort("");
+                $this->account_sid_twresponse->setSort("");
+                $this->to_twresponse->setSort("");
+                $this->from_twresponse->setSort("");
+                $this->messaging_service_sid_twresponse->setSort("");
+                $this->body_twresponse->setSort("");
+                $this->status_twresponse->setSort("");
+                $this->num_segments_twresponse->setSort("");
+                $this->num_media_twresponse->setSort("");
+                $this->direction_twresponse->setSort("");
+                $this->api_version_twresponse->setSort("");
+                $this->price_twresponse->setSort("");
+                $this->price_unit_twresponse->setSort("");
+                $this->error_code_twresponse->setSort("");
+                $this->error_message_twresponse->setSort("");
+                $this->uri_twresponse->setSort("");
+                $this->fk_id_sent->setSort("");
             }
 
             // Reset start position
@@ -1262,28 +1474,6 @@ class SentTblList extends SentTbl
         $item->CssClass = "text-nowrap";
         $item->Visible = true;
         $item->OnLeft = false;
-
-        // "detail_twresponse_tbl"
-        $item = &$this->ListOptions->add("detail_twresponse_tbl");
-        $item->CssClass = "text-nowrap";
-        $item->Visible = true;
-        $item->OnLeft = false;
-        $item->ShowInButtonGroup = false;
-
-        // Multiple details
-        if ($this->ShowMultipleDetails) {
-            $item = &$this->ListOptions->add("details");
-            $item->CssClass = "text-nowrap";
-            $item->Visible = $this->ShowMultipleDetails && $this->ListOptions->detailVisible();
-            $item->OnLeft = false;
-            $item->ShowInButtonGroup = false;
-            $this->ListOptions->hideDetailItems();
-        }
-
-        // Set up detail pages
-        $pages = new SubPages();
-        $pages->add("twresponse_tbl");
-        $this->DetailPages = $pages;
 
         // List actions
         $item = &$this->ListOptions->add("listactions");
@@ -1348,7 +1538,7 @@ class SentTblList extends SentTbl
             $viewcaption = HtmlTitle($Language->phrase("ViewLink"));
             if (true) {
                 if ($this->ModalView && !IsMobile()) {
-                    $opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-table=\"sent_tbl\" data-caption=\"" . $viewcaption . "\" data-ew-action=\"modal\" data-action=\"view\" data-ajax=\"" . ($this->UseAjaxActions ? "true" : "false") . "\" data-url=\"" . HtmlEncode(GetUrl($this->ViewUrl)) . "\" data-btn=\"null\">" . $Language->phrase("ViewLink") . "</a>";
+                    $opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-table=\"twresponse_tbl\" data-caption=\"" . $viewcaption . "\" data-ew-action=\"modal\" data-action=\"view\" data-ajax=\"" . ($this->UseAjaxActions ? "true" : "false") . "\" data-url=\"" . HtmlEncode(GetUrl($this->ViewUrl)) . "\" data-btn=\"null\">" . $Language->phrase("ViewLink") . "</a>";
                 } else {
                     $opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-caption=\"" . $viewcaption . "\" href=\"" . HtmlEncode(GetUrl($this->ViewUrl)) . "\">" . $Language->phrase("ViewLink") . "</a>";
                 }
@@ -1368,11 +1558,11 @@ class SentTblList extends SentTbl
                 if ($listaction->Select == ACTION_SINGLE && $allowed) {
                     $caption = $listaction->Caption;
                     $icon = ($listaction->Icon != "") ? "<i class=\"" . HtmlEncode(str_replace(" ew-icon", "", $listaction->Icon)) . "\" data-caption=\"" . HtmlTitle($caption) . "\"></i> " : "";
-                    $link = "<li><button type=\"button\" class=\"dropdown-item ew-action ew-list-action\" data-caption=\"" . HtmlTitle($caption) . "\" data-ew-action=\"submit\" form=\"fsent_tbllist\" data-key=\"" . $this->keyToJson(true) . "\"" . $listaction->toDataAttrs() . ">" . $icon . " " . $listaction->Caption . "</button></li>";
+                    $link = "<li><button type=\"button\" class=\"dropdown-item ew-action ew-list-action\" data-caption=\"" . HtmlTitle($caption) . "\" data-ew-action=\"submit\" form=\"ftwresponse_tbllist\" data-key=\"" . $this->keyToJson(true) . "\"" . $listaction->toDataAttrs() . ">" . $icon . " " . $listaction->Caption . "</button></li>";
                     if ($link != "") {
                         $links[] = $link;
                         if ($body == "") { // Setup first button
-                            $body = "<button type=\"button\" class=\"btn btn-default ew-action ew-list-action\" title=\"" . HtmlTitle($caption) . "\" data-caption=\"" . HtmlTitle($caption) . "\" data-ew-action=\"submit\" form=\"fsent_tbllist\" data-key=\"" . $this->keyToJson(true) . "\"" . $listaction->toDataAttrs() . ">" . $icon . " " . $listaction->Caption . "</button>";
+                            $body = "<button type=\"button\" class=\"btn btn-default ew-action ew-list-action\" title=\"" . HtmlTitle($caption) . "\" data-caption=\"" . HtmlTitle($caption) . "\" data-ew-action=\"submit\" form=\"ftwresponse_tbllist\" data-key=\"" . $this->keyToJson(true) . "\"" . $listaction->toDataAttrs() . ">" . $icon . " " . $listaction->Caption . "</button>";
                         }
                     }
                 }
@@ -1390,63 +1580,10 @@ class SentTblList extends SentTbl
                 $opt->Body = $body;
             }
         }
-        $detailViewTblVar = "";
-        $detailCopyTblVar = "";
-        $detailEditTblVar = "";
-
-        // "detail_twresponse_tbl"
-        $opt = $this->ListOptions["detail_twresponse_tbl"];
-        if (true) {
-            $body = $Language->phrase("DetailLink") . $Language->TablePhrase("twresponse_tbl", "TblCaption");
-            $body = "<a class=\"btn btn-default ew-row-link ew-detail" . ($this->ListOptions->UseDropDownButton ? " dropdown-toggle" : "") . "\" data-action=\"list\" href=\"" . HtmlEncode("TwresponseTblList?" . Config("TABLE_SHOW_MASTER") . "=sent_tbl&" . GetForeignKeyUrl("fk_id_sent", $this->id_sent->CurrentValue) . "") . "\">" . $body . "</a>";
-            $links = "";
-            $detailPage = Container("TwresponseTblGrid");
-            if ($detailPage->DetailView) {
-                $caption = $Language->phrase("MasterDetailViewLink", null);
-                $url = $this->getViewUrl(Config("TABLE_SHOW_DETAIL") . "=twresponse_tbl");
-                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-view\" data-action=\"view\" data-caption=\"" . HtmlTitle($caption) . "\" href=\"" . HtmlEncode($url) . "\">" . $caption . "</a></li>";
-                if ($detailViewTblVar != "") {
-                    $detailViewTblVar .= ",";
-                }
-                $detailViewTblVar .= "twresponse_tbl";
-            }
-            if ($links != "") {
-                $body .= "<button type=\"button\" class=\"dropdown-toggle btn btn-default ew-detail\" data-bs-toggle=\"dropdown\"></button>";
-                $body .= "<ul class=\"dropdown-menu\">" . $links . "</ul>";
-            } else {
-                $body = preg_replace('/\b\s+dropdown-toggle\b/', "", $body);
-            }
-            $body = "<div class=\"btn-group btn-group-sm ew-btn-group\">" . $body . "</div>";
-            $opt->Body = $body;
-            if ($this->ShowMultipleDetails) {
-                $opt->Visible = false;
-            }
-        }
-        if ($this->ShowMultipleDetails) {
-            $body = "<div class=\"btn-group btn-group-sm ew-btn-group\">";
-            $links = "";
-            if ($detailViewTblVar != "") {
-                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-view\" data-action=\"view\" data-caption=\"" . HtmlEncode($Language->phrase("MasterDetailViewLink", true)) . "\" href=\"" . HtmlEncode($this->getViewUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailViewTblVar)) . "\">" . $Language->phrase("MasterDetailViewLink", null) . "</a></li>";
-            }
-            if ($detailEditTblVar != "") {
-                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-edit\" data-action=\"edit\" data-caption=\"" . HtmlEncode($Language->phrase("MasterDetailEditLink", true)) . "\" href=\"" . HtmlEncode($this->getEditUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailEditTblVar)) . "\">" . $Language->phrase("MasterDetailEditLink", null) . "</a></li>";
-            }
-            if ($detailCopyTblVar != "") {
-                $links .= "<li><a class=\"dropdown-item ew-row-link ew-detail-copy\" data-action=\"add\" data-caption=\"" . HtmlEncode($Language->phrase("MasterDetailCopyLink", true)) . "\" href=\"" . HtmlEncode($this->GetCopyUrl(Config("TABLE_SHOW_DETAIL") . "=" . $detailCopyTblVar)) . "\">" . $Language->phrase("MasterDetailCopyLink", null) . "</a></li>";
-            }
-            if ($links != "") {
-                $body .= "<button type=\"button\" class=\"dropdown-toggle btn btn-default ew-master-detail\" title=\"" . HtmlEncode($Language->phrase("MultipleMasterDetails", true)) . "\" data-bs-toggle=\"dropdown\">" . $Language->phrase("MultipleMasterDetails") . "</button>";
-                $body .= "<ul class=\"dropdown-menu ew-dropdown-menu\">" . $links . "</ul>";
-            }
-            $body .= "</div>";
-            // Multiple details
-            $opt = $this->ListOptions["details"];
-            $opt->Body = $body;
-        }
 
         // "checkbox"
         $opt = $this->ListOptions["checkbox"];
-        $opt->Body = "<div class=\"form-check\"><input type=\"checkbox\" id=\"key_m_" . $this->RowCount . "\" name=\"key_m[]\" class=\"form-check-input ew-multi-select\" value=\"" . HtmlEncode($this->id_sent->CurrentValue) . "\" data-ew-action=\"select-key\"></div>";
+        $opt->Body = "<div class=\"form-check\"><input type=\"checkbox\" id=\"key_m_" . $this->RowCount . "\" name=\"key_m[]\" class=\"form-check-input ew-multi-select\" value=\"" . HtmlEncode($this->id_twresponse->CurrentValue) . "\" data-ew-action=\"select-key\"></div>";
         $this->renderListOptionsExt();
 
         // Call ListOptions_Rendered event
@@ -1473,9 +1610,11 @@ class SentTblList extends SentTbl
             $item = &$option->addGroupOption();
             $item->Body = "";
             $item->Visible = $this->UseColumnVisibility;
-            $option->add("datetime_sent", $this->createColumnOption("datetime_sent"));
-            $option->add("fk_id_message", $this->createColumnOption("fk_id_message"));
-            $option->add("twiliocode_sent", $this->createColumnOption("twiliocode_sent"));
+            $option->add("id_twresponse", $this->createColumnOption("id_twresponse"));
+            $option->add("date_created_twresponse", $this->createColumnOption("date_created_twresponse"));
+            $option->add("to_twresponse", $this->createColumnOption("to_twresponse"));
+            $option->add("from_twresponse", $this->createColumnOption("from_twresponse"));
+            $option->add("body_twresponse", $this->createColumnOption("body_twresponse"));
         }
 
         // Set up options default
@@ -1495,10 +1634,10 @@ class SentTblList extends SentTbl
 
         // Filter button
         $item = &$this->FilterOptions->add("savecurrentfilter");
-        $item->Body = "<a class=\"ew-save-filter\" data-form=\"fsent_tblsrch\" data-ew-action=\"none\">" . $Language->phrase("SaveCurrentFilter") . "</a>";
+        $item->Body = "<a class=\"ew-save-filter\" data-form=\"ftwresponse_tblsrch\" data-ew-action=\"none\">" . $Language->phrase("SaveCurrentFilter") . "</a>";
         $item->Visible = true;
         $item = &$this->FilterOptions->add("deletefilter");
-        $item->Body = "<a class=\"ew-delete-filter\" data-form=\"fsent_tblsrch\" data-ew-action=\"none\">" . $Language->phrase("DeleteFilter") . "</a>";
+        $item->Body = "<a class=\"ew-delete-filter\" data-form=\"ftwresponse_tblsrch\" data-ew-action=\"none\">" . $Language->phrase("DeleteFilter") . "</a>";
         $item->Visible = true;
         $this->FilterOptions->UseDropDownButton = true;
         $this->FilterOptions->UseButtonGroup = !$this->FilterOptions->UseDropDownButton;
@@ -1537,7 +1676,7 @@ class SentTblList extends SentTbl
                 $item = &$option->add("custom_" . $listaction->Action);
                 $caption = $listaction->Caption;
                 $icon = ($listaction->Icon != "") ? '<i class="' . HtmlEncode($listaction->Icon) . '" data-caption="' . HtmlEncode($caption) . '"></i>' . $caption : $caption;
-                $item->Body = '<button type="button" class="btn btn-default ew-action ew-list-action" title="' . HtmlEncode($caption) . '" data-caption="' . HtmlEncode($caption) . '" data-ew-action="submit" form="fsent_tbllist"' . $listaction->toDataAttrs() . '>' . $icon . '</button>';
+                $item->Body = '<button type="button" class="btn btn-default ew-action ew-list-action" title="' . HtmlEncode($caption) . '" data-caption="' . HtmlEncode($caption) . '" data-ew-action="submit" form="ftwresponse_tbllist"' . $listaction->toDataAttrs() . '>' . $icon . '</button>';
                 $item->Visible = $listaction->Allow;
             }
         }
@@ -1686,7 +1825,7 @@ class SentTblList extends SentTbl
 
                 // Set row properties
                 $this->resetAttributes();
-                $this->RowAttrs->merge(["data-rowindex" => $this->RowIndex, "id" => "r0_sent_tbl", "data-rowtype" => ROWTYPE_ADD]);
+                $this->RowAttrs->merge(["data-rowindex" => $this->RowIndex, "id" => "r0_twresponse_tbl", "data-rowtype" => ROWTYPE_ADD]);
                 $this->RowAttrs->appendClass("ew-template");
                 // Render row
                 $this->RowType = ROWTYPE_ADD;
@@ -1747,7 +1886,7 @@ class SentTblList extends SentTbl
         $this->RowAttrs->merge([
             "data-rowindex" => $this->RowCount,
             "data-key" => $this->getKey(true),
-            "id" => "r" . $this->RowCount . "_sent_tbl",
+            "id" => "r" . $this->RowCount . "_twresponse_tbl",
             "data-rowtype" => $this->RowType,
             "class" => ($this->RowCount % 2 != 1) ? "ew-table-alt-row" : "",
         ]);
@@ -1857,20 +1996,54 @@ class SentTblList extends SentTbl
 
         // Call Row Selected event
         $this->rowSelected($row);
-        $this->id_sent->setDbValue($row['id_sent']);
-        $this->datetime_sent->setDbValue($row['datetime_sent']);
-        $this->fk_id_message->setDbValue($row['fk_id_message']);
-        $this->twiliocode_sent->setDbValue($row['twiliocode_sent']);
+        $this->id_twresponse->setDbValue($row['id_twresponse']);
+        $this->sid_twresponse->setDbValue($row['sid_twresponse']);
+        $this->date_created_twresponse->setDbValue($row['date_created_twresponse']);
+        $this->date_updated_twresponse->setDbValue($row['date_updated_twresponse']);
+        $this->date_sent_twresponse->setDbValue($row['date_sent_twresponse']);
+        $this->account_sid_twresponse->setDbValue($row['account_sid_twresponse']);
+        $this->to_twresponse->setDbValue($row['to_twresponse']);
+        $this->from_twresponse->setDbValue($row['from_twresponse']);
+        $this->messaging_service_sid_twresponse->setDbValue($row['messaging_service_sid_twresponse']);
+        $this->body_twresponse->setDbValue($row['body_twresponse']);
+        $this->status_twresponse->setDbValue($row['status_twresponse']);
+        $this->num_segments_twresponse->setDbValue($row['num_segments_twresponse']);
+        $this->num_media_twresponse->setDbValue($row['num_media_twresponse']);
+        $this->direction_twresponse->setDbValue($row['direction_twresponse']);
+        $this->api_version_twresponse->setDbValue($row['api_version_twresponse']);
+        $this->price_twresponse->setDbValue($row['price_twresponse']);
+        $this->price_unit_twresponse->setDbValue($row['price_unit_twresponse']);
+        $this->error_code_twresponse->setDbValue($row['error_code_twresponse']);
+        $this->error_message_twresponse->setDbValue($row['error_message_twresponse']);
+        $this->uri_twresponse->setDbValue($row['uri_twresponse']);
+        $this->fk_id_sent->setDbValue($row['fk_id_sent']);
     }
 
     // Return a row with default values
     protected function newRow()
     {
         $row = [];
-        $row['id_sent'] = $this->id_sent->DefaultValue;
-        $row['datetime_sent'] = $this->datetime_sent->DefaultValue;
-        $row['fk_id_message'] = $this->fk_id_message->DefaultValue;
-        $row['twiliocode_sent'] = $this->twiliocode_sent->DefaultValue;
+        $row['id_twresponse'] = $this->id_twresponse->DefaultValue;
+        $row['sid_twresponse'] = $this->sid_twresponse->DefaultValue;
+        $row['date_created_twresponse'] = $this->date_created_twresponse->DefaultValue;
+        $row['date_updated_twresponse'] = $this->date_updated_twresponse->DefaultValue;
+        $row['date_sent_twresponse'] = $this->date_sent_twresponse->DefaultValue;
+        $row['account_sid_twresponse'] = $this->account_sid_twresponse->DefaultValue;
+        $row['to_twresponse'] = $this->to_twresponse->DefaultValue;
+        $row['from_twresponse'] = $this->from_twresponse->DefaultValue;
+        $row['messaging_service_sid_twresponse'] = $this->messaging_service_sid_twresponse->DefaultValue;
+        $row['body_twresponse'] = $this->body_twresponse->DefaultValue;
+        $row['status_twresponse'] = $this->status_twresponse->DefaultValue;
+        $row['num_segments_twresponse'] = $this->num_segments_twresponse->DefaultValue;
+        $row['num_media_twresponse'] = $this->num_media_twresponse->DefaultValue;
+        $row['direction_twresponse'] = $this->direction_twresponse->DefaultValue;
+        $row['api_version_twresponse'] = $this->api_version_twresponse->DefaultValue;
+        $row['price_twresponse'] = $this->price_twresponse->DefaultValue;
+        $row['price_unit_twresponse'] = $this->price_unit_twresponse->DefaultValue;
+        $row['error_code_twresponse'] = $this->error_code_twresponse->DefaultValue;
+        $row['error_message_twresponse'] = $this->error_message_twresponse->DefaultValue;
+        $row['uri_twresponse'] = $this->uri_twresponse->DefaultValue;
+        $row['fk_id_sent'] = $this->fk_id_sent->DefaultValue;
         return $row;
     }
 
@@ -1911,58 +2084,131 @@ class SentTblList extends SentTbl
 
         // Common render codes for all row types
 
-        // id_sent
+        // id_twresponse
 
-        // datetime_sent
+        // sid_twresponse
 
-        // fk_id_message
+        // date_created_twresponse
 
-        // twiliocode_sent
+        // date_updated_twresponse
+
+        // date_sent_twresponse
+
+        // account_sid_twresponse
+
+        // to_twresponse
+
+        // from_twresponse
+
+        // messaging_service_sid_twresponse
+
+        // body_twresponse
+
+        // status_twresponse
+
+        // num_segments_twresponse
+
+        // num_media_twresponse
+
+        // direction_twresponse
+
+        // api_version_twresponse
+
+        // price_twresponse
+
+        // price_unit_twresponse
+
+        // error_code_twresponse
+
+        // error_message_twresponse
+
+        // uri_twresponse
+
+        // fk_id_sent
 
         // View row
         if ($this->RowType == ROWTYPE_VIEW) {
-            // datetime_sent
-            $this->datetime_sent->ViewValue = $this->datetime_sent->CurrentValue;
-            $this->datetime_sent->ViewValue = FormatDateTime($this->datetime_sent->ViewValue, $this->datetime_sent->formatPattern());
+            // id_twresponse
+            $this->id_twresponse->ViewValue = $this->id_twresponse->CurrentValue;
+            $this->id_twresponse->ViewValue = FormatNumber($this->id_twresponse->ViewValue, $this->id_twresponse->formatPattern());
 
-            // fk_id_message
-            $this->fk_id_message->ViewValue = $this->fk_id_message->CurrentValue;
-            $curVal = strval($this->fk_id_message->CurrentValue);
-            if ($curVal != "") {
-                $this->fk_id_message->ViewValue = $this->fk_id_message->lookupCacheOption($curVal);
-                if ($this->fk_id_message->ViewValue === null) { // Lookup from database
-                    $filterWrk = SearchFilter("[id_message]", "=", $curVal, DATATYPE_NUMBER, "");
-                    $sqlWrk = $this->fk_id_message->Lookup->getSql(false, $filterWrk, '', $this, true, true);
-                    $conn = Conn();
-                    $config = $conn->getConfiguration();
-                    $config->setResultCacheImpl($this->Cache);
-                    $rswrk = $conn->executeCacheQuery($sqlWrk, [], [], $this->CacheProfile)->fetchAll();
-                    $ari = count($rswrk);
-                    if ($ari > 0) { // Lookup values found
-                        $arwrk = $this->fk_id_message->Lookup->renderViewRow($rswrk[0]);
-                        $this->fk_id_message->ViewValue = $this->fk_id_message->displayValue($arwrk);
-                    } else {
-                        $this->fk_id_message->ViewValue = FormatNumber($this->fk_id_message->CurrentValue, $this->fk_id_message->formatPattern());
-                    }
-                }
-            } else {
-                $this->fk_id_message->ViewValue = null;
-            }
+            // sid_twresponse
+            $this->sid_twresponse->ViewValue = $this->sid_twresponse->CurrentValue;
 
-            // twiliocode_sent
-            $this->twiliocode_sent->ViewValue = $this->twiliocode_sent->CurrentValue;
+            // date_created_twresponse
+            $this->date_created_twresponse->ViewValue = $this->date_created_twresponse->CurrentValue;
 
-            // datetime_sent
-            $this->datetime_sent->HrefValue = "";
-            $this->datetime_sent->TooltipValue = "";
+            // date_updated_twresponse
+            $this->date_updated_twresponse->ViewValue = $this->date_updated_twresponse->CurrentValue;
 
-            // fk_id_message
-            $this->fk_id_message->HrefValue = "";
-            $this->fk_id_message->TooltipValue = "";
+            // date_sent_twresponse
+            $this->date_sent_twresponse->ViewValue = $this->date_sent_twresponse->CurrentValue;
 
-            // twiliocode_sent
-            $this->twiliocode_sent->HrefValue = "";
-            $this->twiliocode_sent->TooltipValue = "";
+            // account_sid_twresponse
+            $this->account_sid_twresponse->ViewValue = $this->account_sid_twresponse->CurrentValue;
+
+            // to_twresponse
+            $this->to_twresponse->ViewValue = $this->to_twresponse->CurrentValue;
+
+            // from_twresponse
+            $this->from_twresponse->ViewValue = $this->from_twresponse->CurrentValue;
+
+            // messaging_service_sid_twresponse
+            $this->messaging_service_sid_twresponse->ViewValue = $this->messaging_service_sid_twresponse->CurrentValue;
+
+            // body_twresponse
+            $this->body_twresponse->ViewValue = $this->body_twresponse->CurrentValue;
+
+            // status_twresponse
+            $this->status_twresponse->ViewValue = $this->status_twresponse->CurrentValue;
+
+            // num_segments_twresponse
+            $this->num_segments_twresponse->ViewValue = $this->num_segments_twresponse->CurrentValue;
+
+            // num_media_twresponse
+            $this->num_media_twresponse->ViewValue = $this->num_media_twresponse->CurrentValue;
+
+            // direction_twresponse
+            $this->direction_twresponse->ViewValue = $this->direction_twresponse->CurrentValue;
+
+            // api_version_twresponse
+            $this->api_version_twresponse->ViewValue = $this->api_version_twresponse->CurrentValue;
+
+            // price_twresponse
+            $this->price_twresponse->ViewValue = $this->price_twresponse->CurrentValue;
+
+            // price_unit_twresponse
+            $this->price_unit_twresponse->ViewValue = $this->price_unit_twresponse->CurrentValue;
+
+            // error_code_twresponse
+            $this->error_code_twresponse->ViewValue = $this->error_code_twresponse->CurrentValue;
+
+            // error_message_twresponse
+            $this->error_message_twresponse->ViewValue = $this->error_message_twresponse->CurrentValue;
+
+            // fk_id_sent
+            $this->fk_id_sent->ViewValue = $this->fk_id_sent->CurrentValue;
+            $this->fk_id_sent->ViewValue = FormatNumber($this->fk_id_sent->ViewValue, $this->fk_id_sent->formatPattern());
+
+            // id_twresponse
+            $this->id_twresponse->HrefValue = "";
+            $this->id_twresponse->TooltipValue = "";
+
+            // date_created_twresponse
+            $this->date_created_twresponse->HrefValue = "";
+            $this->date_created_twresponse->TooltipValue = "";
+
+            // to_twresponse
+            $this->to_twresponse->HrefValue = "";
+            $this->to_twresponse->TooltipValue = "";
+
+            // from_twresponse
+            $this->from_twresponse->HrefValue = "";
+            $this->from_twresponse->TooltipValue = "";
+
+            // body_twresponse
+            $this->body_twresponse->HrefValue = "";
+            $this->body_twresponse->TooltipValue = "";
         }
 
         // Call Row Rendered event
@@ -1981,7 +2227,7 @@ class SentTblList extends SentTbl
         // Search button
         $item = &$this->SearchOptions->add("searchtoggle");
         $searchToggleClass = ($this->SearchWhere != "") ? " active" : " active";
-        $item->Body = "<a class=\"btn btn-default ew-search-toggle" . $searchToggleClass . "\" role=\"button\" title=\"" . $Language->phrase("SearchPanel") . "\" data-caption=\"" . $Language->phrase("SearchPanel") . "\" data-ew-action=\"search-toggle\" data-form=\"fsent_tblsrch\" aria-pressed=\"" . ($searchToggleClass == " active" ? "true" : "false") . "\">" . $Language->phrase("SearchLink") . "</a>";
+        $item->Body = "<a class=\"btn btn-default ew-search-toggle" . $searchToggleClass . "\" role=\"button\" title=\"" . $Language->phrase("SearchPanel") . "\" data-caption=\"" . $Language->phrase("SearchPanel") . "\" data-ew-action=\"search-toggle\" data-form=\"ftwresponse_tblsrch\" aria-pressed=\"" . ($searchToggleClass == " active" ? "true" : "false") . "\">" . $Language->phrase("SearchLink") . "</a>";
         $item->Visible = true;
 
         // Show all button
@@ -2036,15 +2282,15 @@ class SentTblList extends SentTbl
                 $this->DbMasterFilter = "";
                 $this->DbDetailFilter = "";
             }
-            if ($masterTblVar == "message_tbl") {
+            if ($masterTblVar == "sent_tbl") {
                 $validMaster = true;
-                $masterTbl = Container("message_tbl");
-                if (($parm = Get("fk_id_message", Get("fk_id_message"))) !== null) {
-                    $masterTbl->id_message->setQueryStringValue($parm);
-                    $this->fk_id_message->QueryStringValue = $masterTbl->id_message->QueryStringValue; // DO NOT change, master/detail key data type can be different
-                    $this->fk_id_message->setSessionValue($this->fk_id_message->QueryStringValue);
-                    $foreignKeys["fk_id_message"] = $this->fk_id_message->QueryStringValue;
-                    if (!is_numeric($masterTbl->id_message->QueryStringValue)) {
+                $masterTbl = Container("sent_tbl");
+                if (($parm = Get("fk_id_sent", Get("fk_id_sent"))) !== null) {
+                    $masterTbl->id_sent->setQueryStringValue($parm);
+                    $this->fk_id_sent->QueryStringValue = $masterTbl->id_sent->QueryStringValue; // DO NOT change, master/detail key data type can be different
+                    $this->fk_id_sent->setSessionValue($this->fk_id_sent->QueryStringValue);
+                    $foreignKeys["fk_id_sent"] = $this->fk_id_sent->QueryStringValue;
+                    if (!is_numeric($masterTbl->id_sent->QueryStringValue)) {
                         $validMaster = false;
                     }
                 } else {
@@ -2058,15 +2304,15 @@ class SentTblList extends SentTbl
                     $this->DbMasterFilter = "";
                     $this->DbDetailFilter = "";
             }
-            if ($masterTblVar == "message_tbl") {
+            if ($masterTblVar == "sent_tbl") {
                 $validMaster = true;
-                $masterTbl = Container("message_tbl");
-                if (($parm = Post("fk_id_message", Post("fk_id_message"))) !== null) {
-                    $masterTbl->id_message->setFormValue($parm);
-                    $this->fk_id_message->FormValue = $masterTbl->id_message->FormValue;
-                    $this->fk_id_message->setSessionValue($this->fk_id_message->FormValue);
-                    $foreignKeys["fk_id_message"] = $this->fk_id_message->FormValue;
-                    if (!is_numeric($masterTbl->id_message->FormValue)) {
+                $masterTbl = Container("sent_tbl");
+                if (($parm = Post("fk_id_sent", Post("fk_id_sent"))) !== null) {
+                    $masterTbl->id_sent->setFormValue($parm);
+                    $this->fk_id_sent->FormValue = $masterTbl->id_sent->FormValue;
+                    $this->fk_id_sent->setSessionValue($this->fk_id_sent->FormValue);
+                    $foreignKeys["fk_id_sent"] = $this->fk_id_sent->FormValue;
+                    if (!is_numeric($masterTbl->id_sent->FormValue)) {
                         $validMaster = false;
                     }
                 } else {
@@ -2092,9 +2338,9 @@ class SentTblList extends SentTbl
             }
 
             // Clear previous master key from Session
-            if ($masterTblVar != "message_tbl") {
-                if (!array_key_exists("fk_id_message", $foreignKeys)) { // Not current foreign key
-                    $this->fk_id_message->setSessionValue("");
+            if ($masterTblVar != "sent_tbl") {
+                if (!array_key_exists("fk_id_sent", $foreignKeys)) { // Not current foreign key
+                    $this->fk_id_sent->setSessionValue("");
                 }
             }
         }
@@ -2125,8 +2371,6 @@ class SentTblList extends SentTbl
 
             // Set up lookup SQL and connection
             switch ($fld->FieldVar) {
-                case "x_fk_id_message":
-                    break;
                 default:
                     $lookupFilter = "";
                     break;

@@ -39,7 +39,7 @@ class Captcha
     public $RenderingView = false;
 
     // CSS class/style
-    public $CurrentPageName = "TwilioTblList";
+    public $CurrentPageName = "TwresponseTblView";
 
     // Page headings
     public $Heading = "";

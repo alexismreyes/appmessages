@@ -1159,6 +1159,9 @@
   <project>
     <phrase id="bodytitle" value="CBS Messages App" />
     <phrase id="footertext" value="&amp;copy;2022 e.World Technology Limited. All rights reserved." />
+    <menu id="9">
+      <phrase id="menutext" value="Twilio Response" />
+    </menu>
     <menu id="7">
       <phrase id="menutext" value="SENDING SMS..." />
     </menu>
@@ -1235,6 +1238,72 @@
       </field>
       <field id="token_twilio">
         <phrase id="fldcaption" value="token twilio" />
+      </field>
+    </table>
+    <table id="twresponse_tbl">
+      <phrase id="tblcaption" value="Twilio Response" />
+      <field id="id_twresponse">
+        <phrase id="fldcaption" value="id twresponse" />
+      </field>
+      <field id="sid_twresponse">
+        <phrase id="fldcaption" value="sid twresponse" />
+      </field>
+      <field id="date_created_twresponse">
+        <phrase id="fldcaption" value="date created twresponse" />
+      </field>
+      <field id="date_updated_twresponse">
+        <phrase id="fldcaption" value="date updated twresponse" />
+      </field>
+      <field id="date_sent_twresponse">
+        <phrase id="fldcaption" value="date sent twresponse" />
+      </field>
+      <field id="account_sid_twresponse">
+        <phrase id="fldcaption" value="account sid twresponse" />
+      </field>
+      <field id="to_twresponse">
+        <phrase id="fldcaption" value="to twresponse" />
+      </field>
+      <field id="from_twresponse">
+        <phrase id="fldcaption" value="from twresponse" />
+      </field>
+      <field id="messaging_service_sid_twresponse">
+        <phrase id="fldcaption" value="messaging service sid twresponse" />
+      </field>
+      <field id="body_twresponse">
+        <phrase id="fldcaption" value="body twresponse" />
+      </field>
+      <field id="status_twresponse">
+        <phrase id="fldcaption" value="status twresponse" />
+      </field>
+      <field id="num_segments_twresponse">
+        <phrase id="fldcaption" value="num segments twresponse" />
+      </field>
+      <field id="num_media_twresponse">
+        <phrase id="fldcaption" value="num media twresponse" />
+      </field>
+      <field id="direction_twresponse">
+        <phrase id="fldcaption" value="direction twresponse" />
+      </field>
+      <field id="api_version_twresponse">
+        <phrase id="fldcaption" value="api version twresponse" />
+      </field>
+      <field id="price_twresponse">
+        <phrase id="fldcaption" value="price twresponse" />
+      </field>
+      <field id="price_unit_twresponse">
+        <phrase id="fldcaption" value="price unit twresponse" />
+      </field>
+      <field id="error_code_twresponse">
+        <phrase id="fldcaption" value="error code twresponse" />
+      </field>
+      <field id="error_message_twresponse">
+        <phrase id="fldcaption" value="error message twresponse" />
+      </field>
+      <field id="uri_twresponse">
+        <phrase id="fldcaption" value="uri twresponse" />
+      </field>
+      <field id="fk_id_sent">
+        <phrase id="fldcaption" value="fk id sent" />
       </field>
     </table>
   </project>

@@ -87,6 +87,14 @@ loadjs.ready(["wrapper", "head"], function () {
     </tr>
 <?php } ?>
 </table>
+<?php
+    if (in_array("twresponse_tbl", explode(",", $Page->getCurrentDetailTable())) && $twresponse_tbl->DetailView) {
+?>
+<?php if ($Page->getCurrentDetailTable() != "") { ?>
+<h4 class="ew-detail-caption"><?= $Language->tablePhrase("twresponse_tbl", "TblCaption") ?></h4>
+<?php } ?>
+<?php include_once "TwresponseTblGrid.php" ?>
+<?php } ?>
 </form>
 </main>
 <?php

@@ -40,8 +40,25 @@ $message = $twilio->messages
 //print($message->sid);
 //header("Location: http://localhost/appmessages/SentTblList"); //IGNORED
 
+/* print($message->status);
+echo "<br>";
+print($message->body);
+echo "<br>";
+print($message->sid);
+echo "<br>";
+print($message->to);
+ */
+$fk_sent_id = ExecuteScalar("SELECT IDENT_CURRENT('sent_tbl')");
+
+$datecreated=$message->dateCreated->format('m-d-Y H:i:s');
+
+$insert_response = ExecuteStatement("INSERT INTO twresponse_tbl (sid_twresponse,from_twresponse,to_twresponse,body_twresponse,date_created_twresponse,fk_id_sent) 
+VALUES ('$message->sid','$message->from','$message->to','$message->body','$datecreated','$fk_sent_id')");
+
 ?>
+
 <script type="text/javascript">
 window.location.href = 'http://localhost/appmessages/SentTblList';
 </script>
+
 <?= GetDebugMessage() ?>

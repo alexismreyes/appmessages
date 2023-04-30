@@ -112,6 +112,7 @@ class SentTbl extends DbTable
         $this->id_sent->InputTextType = "text";
         $this->id_sent->IsAutoIncrement = true; // Autoincrement field
         $this->id_sent->IsPrimaryKey = true; // Primary key field
+        $this->id_sent->IsForeignKey = true; // Foreign key field
         $this->id_sent->Nullable = false; // NOT NULL field
         $this->id_sent->Sortable = false; // Allow sort
         $this->id_sent->DefaultErrorMessage = $Language->phrase("IncorrectInteger");
@@ -332,6 +333,32 @@ class SentTbl extends DbTable
                 return GetKeyFilter($this->fk_id_message, $masterTable->id_message->DbValue, $masterTable->id_message->DataType, $masterTable->Dbid);
         }
         return "";
+    }
+
+    // Current detail table name
+    public function getCurrentDetailTable()
+    {
+        return Session(PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_DETAIL_TABLE")) ?? "";
+    }
+
+    public function setCurrentDetailTable($v)
+    {
+        $_SESSION[PROJECT_NAME . "_" . $this->TableVar . "_" . Config("TABLE_DETAIL_TABLE")] = $v;
+    }
+
+    // Get detail url
+    public function getDetailUrl()
+    {
+        // Detail url
+        $detailUrl = "";
+        if ($this->getCurrentDetailTable() == "twresponse_tbl") {
+            $detailUrl = Container("twresponse_tbl")->getListUrl() . "?" . Config("TABLE_SHOW_MASTER") . "=" . $this->TableVar;
+            $detailUrl .= "&" . GetForeignKeyUrl("fk_id_sent", $this->id_sent->CurrentValue);
+        }
+        if ($detailUrl == "") {
+            $detailUrl = "SentTblList";
+        }
+        return $detailUrl;
     }
 
     // Render X Axis for chart
@@ -906,7 +933,11 @@ class SentTbl extends DbTable
     // Edit URL
     public function getEditUrl($parm = "")
     {
-        $url = $this->keyUrl("SentTblEdit", $parm);
+        if ($parm != "") {
+            $url = $this->keyUrl("SentTblEdit", $parm);
+        } else {
+            $url = $this->keyUrl("SentTblEdit", Config("TABLE_SHOW_DETAIL") . "=");
+        }
         return $this->addMasterUrl($url);
     }
 
@@ -920,7 +951,11 @@ class SentTbl extends DbTable
     // Copy URL
     public function getCopyUrl($parm = "")
     {
-        $url = $this->keyUrl("SentTblAdd", $parm);
+        if ($parm != "") {
+            $url = $this->keyUrl("SentTblAdd", $parm);
+        } else {
+            $url = $this->keyUrl("SentTblAdd", Config("TABLE_SHOW_DETAIL") . "=");
+        }
         return $this->addMasterUrl($url);
     }
 
