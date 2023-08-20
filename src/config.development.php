@@ -6,7 +6,7 @@
 
 return [
     "Databases" => [
-        "DB" => ["id" => "DB", "type" => "MSSQL", "qs" => "[", "qe" => "]", "host" => "LAPTOP-BBHKTP22\\SQLEXPRESS", "port" => null, "user" => "sa", "password" => "sqlphp2023!", "dbname" => "appmessages_db"]
+        "DB" => ["id" => "DB", "type" => "MSSQL", "qs" => "[", "qe" => "]", "host" => "DESKTOP-3P0C92A\SQLEXPRESS", "port" => null, "user" => "sa", "password" => "admonnt01", "dbname" => "appmessages_db"]
     ],
     "SMTP" => [
         "PHPMAILER_MAILER" => "smtp", // PHPMailer mailer
